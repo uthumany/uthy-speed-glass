@@ -24,9 +24,18 @@ The system overview is documented at [Zorin OS technical details](https://zorin.
 
 ## Install
 
-Download the installable ZIP from [GitHub Releases](https://github.com/uthumany/uthy-speed-glass/releases/latest). To build/install from a source checkout, run on the target GNOME desktop:
+You can install the prebuilt ZIP from [GitHub Releases](https://github.com/uthumany/uthy-speed-glass/releases/latest) with **Extension Manager**, or use these commands (replace the ZIP path with where you downloaded it):
 
 ```bash
+gnome-extensions install "/path/to/uthy-speed-glass@uthy.zip"
+gnome-extensions enable uthy-speed-glass@uthy
+```
+
+To install from source, first clone the repository and enter its directory. If you already cloned it, `cd` to that checkout instead. These commands must be run from the repository root—the folder containing `scripts/` and `metadata.json`—because the script paths below are relative to that directory. A new Terminal normally starts in your home directory (`~`), not in the checkout.
+
+```bash
+git clone https://github.com/uthumany/uthy-speed-glass.git
+cd uthy-speed-glass
 bash scripts/install.sh
 gnome-extensions enable uthy-speed-glass@uthy
 ```
@@ -37,7 +46,7 @@ To install from a locally built ZIP instead:
 
 ```bash
 bash scripts/package.sh
-gnome-extensions install dist/uthy-speed-glass@uthy.zip
+gnome-extensions install "$PWD/dist/uthy-speed-glass@uthy.zip"
 gnome-extensions enable uthy-speed-glass@uthy
 ```
 

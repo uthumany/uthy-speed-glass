@@ -1,5 +1,7 @@
 # Development
 
+All `scripts/...` commands below assume the terminal's current directory is the repository root (the folder containing `scripts/` and `metadata.json`). From another directory, first run `cd /path/to/uthy-speed-glass` using the actual checkout path.
+
 ## Requirements
 
 For runtime development, use the target GNOME desktop with GNOME Shell 45–50, GJS, GTK4, Libadwaita, GLib schema tools, and a GNOME extension manager. The exact GNOME Shell/GJS versions on the target Zorin OS 18.1 machine were not available in this build environment; inspect them before installing:

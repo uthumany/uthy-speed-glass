@@ -1,5 +1,17 @@
 # Troubleshooting
 
+## `bash: scripts/...: No such file or directory`
+
+The command was run outside the repository. A prompt ending in `:~$` means the terminal is in your home directory, so Bash looks for `~/scripts/install.sh` rather than the script in the checkout. Change to the project folder first (the folder containing `scripts/` and `metadata.json`):
+
+```bash
+cd ~/uthy-speed-glass
+ls scripts
+bash scripts/install.sh
+```
+
+If the checkout is somewhere else, replace `~/uthy-speed-glass` with its actual path. If you have not cloned the source, use the prebuilt ZIP from [GitHub Releases](https://github.com/uthumany/uthy-speed-glass/releases/latest) instead. When `scripts/package.sh` could not be found, it never ran and did not create `dist/uthy-speed-glass@uthy.zip`; the later “Error opening file” and “Extension does not exist” messages are consequences of those missing files, not a separate GNOME Shell failure.
+
 ## The extension is not listed or cannot be enabled
 
 Confirm the UUID folder is `~/.local/share/gnome-shell/extensions/uthy-speed-glass@uthy/`, `metadata.json` parses, and the installed Shell major is in the declared list (45–50). Run `gnome-extensions list` and `gnome-extensions info uthy-speed-glass@uthy`. Check Shell errors with `journalctl -f -o cat /usr/bin/gnome-shell`. If the exact installed GNOME version is outside the declared list, do not force-enable it; validate the APIs first.

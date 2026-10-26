@@ -1,0 +1,205 @@
+.uthy-glass-card {
+  padding: 8px 10px 6px;
+  border: 1px solid rgba(220, 235, 255, 0.30);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: #f5f8ff;
+  spacing: 4px;
+}
+
+.uthy-glass-card:focus,
+.uthy-glass-card StButton:focus,
+.uthy-glass-card StWidget:focus {
+  border-color: rgba(245, 248, 255, 0.82);
+  box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.72), 0 10px 28px rgba(0, 0, 0, 0.34);
+}
+
+.uthy-toolbar {
+  min-height: 26px;
+  spacing: 4px;
+  border-bottom: 1px solid rgba(220, 235, 255, 0.13);
+  padding-bottom: 4px;
+}
+
+.uthy-drag-handle {
+  min-height: 24px;
+  border-radius: 8px;
+  padding: 0 6px;
+}
+
+.uthy-drag-handle:focus {
+  background-color: rgba(255, 255, 255, 0.13);
+}
+
+.uthy-brand {
+  color: rgba(245, 248, 255, 0.72);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+}
+
+.uthy-icon-button {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 2px;
+  border-radius: 8px;
+  color: #edf4ff;
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.uthy-icon-button:hover,
+.uthy-control-button:hover {
+  background-color: rgba(255, 255, 255, 0.17);
+}
+
+.uthy-icon-button:active,
+.uthy-control-button:active {
+  background-color: rgba(255, 255, 255, 0.24);
+}
+
+.uthy-icon-button:focus,
+.uthy-control-button:focus {
+  border: 1px solid rgba(245, 248, 255, 0.9);
+}
+
+.uthy-toolbar-icon {
+  color: #eaf3ff;
+}
+
+.uthy-widget-body {
+  spacing: 7px;
+  padding: 2px 2px 4px;
+}
+
+.uthy-mini-content {
+  spacing: 4px;
+  padding: 2px 0;
+}
+
+.uthy-mini-readings,
+.uthy-gauges-row,
+.uthy-statistics-row,
+.uthy-controls-row {
+  spacing: 10px;
+}
+
+.uthy-mini-cell {
+  spacing: 0;
+  min-width: 0;
+}
+
+.uthy-mini-speed-row {
+  spacing: 4px;
+}
+
+.uthy-mini-arrow,
+.uthy-gauge-arrow {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.uthy-mini-speed {
+  color: #f5f8ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.uthy-mini-caption,
+.uthy-gauge-title,
+.uthy-stat-title {
+  color: #b7c5da;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.uthy-status-line,
+.uthy-expanded-status {
+  color: #b7c5da;
+  font-size: 10px;
+}
+
+.uthy-expanded-content {
+  spacing: 9px;
+  padding: 2px 2px 0;
+}
+
+.uthy-speed-gauge {
+  spacing: 5px;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(220, 235, 255, 0.16);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.055);
+}
+
+.uthy-gauge-heading {
+  spacing: 5px;
+}
+
+.uthy-gauge-value {
+  color: #f5f8ff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.uthy-gauge-peak {
+  color: #b7c5da;
+  font-size: 10px;
+}
+
+.uthy-meter-track {
+  min-height: 8px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.13);
+}
+
+.uthy-meter-fill {
+  min-width: 4px;
+  min-height: 8px;
+  border-radius: 5px;
+}
+
+.uthy-history-graph {
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.uthy-statistics-row {
+  padding-top: 3px;
+}
+
+.uthy-stat-item {
+  spacing: 2px;
+}
+
+.uthy-stat-value {
+  color: #f5f8ff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.uthy-controls-row {
+  min-height: 28px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(220, 235, 255, 0.13);
+}
+
+.uthy-control-button {
+  min-height: 26px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: #f5f8ff;
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.uthy-resize-handle {
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 4px;
+  background-color: rgba(245, 248, 255, 0.18);
+}
+
+.uthy-resize-handle:hover,
+.uthy-resize-handle:focus {
+  background-color: rgba(39, 201, 255, 0.52);
+}

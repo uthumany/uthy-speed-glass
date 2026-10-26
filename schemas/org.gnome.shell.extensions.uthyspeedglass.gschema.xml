@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.uthyspeedglass" path="/org/gnome/shell/extensions/uthyspeedglass/">
+    <key name="refresh-interval" type="i"><default>1000</default><range min="500" max="2000"/></key>
+    <key name="interface" type="s"><default>'auto'</default></key>
+    <key name="display-mode" type="s"><default>'mini'</default></key>
+    <key name="show-graphs" type="b"><default>true</default></key>
+    <key name="show-widget" type="b"><default>true</default></key>
+    <key name="remember-position" type="b"><default>true</default></key>
+    <key name="widget-x" type="i"><default>24</default><range min="-10000" max="10000"/></key>
+    <key name="widget-y" type="i"><default>120</default><range min="-10000" max="10000"/></key>
+    <key name="widget-width" type="i"><default>280</default><range min="240" max="1000"/></key>
+    <key name="widget-height" type="i"><default>136</default><range min="70" max="700"/></key>
+    <key name="pinned" type="b"><default>false</default></key>
+    <key name="transparency" type="i"><default>78</default><range min="45" max="96"/></key>
+    <key name="download-color" type="s"><default>'#27C9FF'</default></key>
+    <key name="upload-color" type="s"><default>'#A56BFF'</default></key>
+    <key name="font-size" type="i"><default>13</default><range min="10" max="22"/></key>
+    <key name="corner-radius" type="i"><default>22</default><range min="10" max="36"/></key>
+    <key name="graph-height" type="i"><default>42</default><range min="24" max="100"/></key>
+    <key name="reduce-motion" type="b"><default>false</default></key>
+    <key name="ping-enabled" type="b"><default>false</default></key>
+  </schema>
+</schemalist>

@@ -1,0 +1,9 @@
+{
+  "name": "uthy-speed-glass",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "validate": "bash scripts/validate.sh"
+  }
+}

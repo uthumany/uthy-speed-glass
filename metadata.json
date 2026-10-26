@@ -1,0 +1,10 @@
+{
+  "uuid": "uthy-speed-glass@uthy",
+  "name": "Uthy Speed Glass",
+  "description": "A floating liquid-glass network speed monitor with live download and upload rates.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/uthumany/uthy-speed-glass",
+  "settings-schema": "org.gnome.shell.extensions.uthyspeedglass",
+  "version": 1,
+  "version-name": "1.0.0"
+}

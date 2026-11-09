@@ -24,7 +24,6 @@ export class InterfaceManager {
         this._nmProxy = null;
         this._nmLastRefresh = 0;
         this._nmActive = [];
-        this._nmUnavailable = false;
     }
 
     readCounters() {
@@ -70,8 +69,6 @@ export class InterfaceManager {
 
     _refreshNetworkManager(nowMs) {
         this._nmLastRefresh = nowMs;
-        if (this._nmUnavailable)
-            return;
 
         try {
             if (!this._nmProxy) {
@@ -115,7 +112,6 @@ export class InterfaceManager {
         } catch (_error) {
             this._nmProxy = null;
             this._nmActive = [];
-            this._nmUnavailable = true;
         }
     }
 

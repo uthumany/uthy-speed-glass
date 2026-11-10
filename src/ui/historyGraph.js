@@ -37,23 +37,52 @@ export function createHistoryGraph({height = 42, downloadColor = '#27C9FF', uplo
                 item.downloadMBps ?? 0, item.uploadMBps ?? 0,
             ]));
             const traces = [
-                {key: 'downloadMBps', color: rgba(downloadColor, 0.95)},
-                {key: 'uploadMBps', color: rgba(uploadColor, 0.9)},
+                {key: 'downloadMBps', color: rgba(downloadColor, 0.95), fill: rgba(downloadColor, 0.16)},
+                {key: 'uploadMBps', color: rgba(uploadColor, 0.9), fill: rgba(uploadColor, 0.13)},
             ];
+
+            // A single engraved baseline gives the glass a surface to sit on.
+            cr.setSourceRGBA(0.84, 0.9, 1, 0.12);
+            cr.setLineWidth(1);
+            cr.newPath();
+            cr.moveTo(0, graphHeight - 1.5);
+            cr.lineTo(width, graphHeight - 1.5);
+            cr.stroke();
+
+            const pointFor = (sample, trace, index) => {
+                const x = samples.length === 1 ? 0 : index / (samples.length - 1) * width;
+                const value = Math.max(0, sample[trace.key] ?? 0);
+                const y = graphHeight - 3 - (value / maxValue) * Math.max(1, graphHeight - 6);
+                return [x, y];
+            };
+
             for (const trace of traces) {
                 if (!samples.length)
                     continue;
-                cr.setSourceRGBA(...trace.color);
+
+                // Soft refraction glow under the line: a translucent area that
+                // makes the trace read as light passing through the glass.
                 cr.newPath();
+                cr.moveTo(0, graphHeight);
                 samples.forEach((sample, index) => {
-                    const x = samples.length === 1 ? 0 : index / (samples.length - 1) * width;
-                    const value = Math.max(0, sample[trace.key] ?? 0);
-                    const y = graphHeight - 3 - (value / maxValue) * Math.max(1, graphHeight - 6);
+                    const [x, y] = pointFor(sample, trace, index);
+                    cr.lineTo(x, y);
+                });
+                cr.lineTo(width, graphHeight);
+                cr.closePath();
+                cr.setSourceRGBA(...trace.fill);
+                cr.fill();
+
+                cr.newPath();
+                cr.setLineWidth(1.5);
+                samples.forEach((sample, index) => {
+                    const [x, y] = pointFor(sample, trace, index);
                     if (index === 0)
                         cr.moveTo(x, y);
                     else
                         cr.lineTo(x, y);
                 });
+                cr.setSourceRGBA(...trace.color);
                 cr.stroke();
             }
         } finally {

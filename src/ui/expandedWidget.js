@@ -20,9 +20,9 @@ export function createExpandedWidget(data, options) {
     const root = new St.BoxLayout({vertical: true, style_class: 'uthy-expanded-content'});
     const gauges = new St.BoxLayout({style_class: 'uthy-gauges-row', x_expand: true});
     const downloadGauge = createSpeedGauge({title: 'DOWNLOAD', arrow: '↓', color: options.downloadColor,
-        reducedMotion: options.reduceMotion});
+        motion: options.motion});
     const uploadGauge = createSpeedGauge({title: 'UPLOAD', arrow: '↑', color: options.uploadColor,
-        reducedMotion: options.reduceMotion});
+        motion: options.motion});
     gauges.add_child(downloadGauge);
     gauges.add_child(uploadGauge);
     root.add_child(gauges);
@@ -54,8 +54,8 @@ export function createExpandedWidget(data, options) {
         actor: root,
         update(next) {
             const stats = next.statistics ?? {};
-            updateSpeedGauge(downloadGauge, next.downloadMBps, stats.downloadPeakMBps, options.reduceMotion);
-            updateSpeedGauge(uploadGauge, next.uploadMBps, stats.uploadPeakMBps, options.reduceMotion);
+            updateSpeedGauge(downloadGauge, next.downloadMBps, stats.downloadPeakMBps, options.motion);
+            updateSpeedGauge(uploadGauge, next.uploadMBps, stats.uploadPeakMBps, options.motion);
             rx.value.text = formatBytes(stats.downloadTotalBytes);
             tx.value.text = formatBytes(stats.uploadTotalBytes);
             downAverage.value.text = formatSpeed(stats.downloadAverageMBps);

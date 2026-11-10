@@ -2,7 +2,7 @@ import St from 'gi://St';
 import {createHistoryGraph} from './historyGraph.js';
 import {formatSpeed} from '../network/speedCalculator.js';
 
-function makeCell({label, arrow, color, speed}) {
+function makeCell({label, arrow, color, speed, motion}) {
     const cell = new St.BoxLayout({vertical: true, style_class: 'uthy-mini-cell', x_expand: true});
     const top = new St.BoxLayout({style_class: 'uthy-mini-speed-row'});
     const symbol = new St.Label({text: arrow, style_class: 'uthy-mini-arrow'});
@@ -14,7 +14,7 @@ function makeCell({label, arrow, color, speed}) {
     top.add_child(value);
     cell.add_child(top);
     cell.add_child(caption);
-    return {cell, value};
+    return {cell, value, motion, lastReading: null};
 }
 
 function connectionText(data) {
@@ -29,8 +29,10 @@ function connectionText(data) {
 export function createMiniWidget(data, options, {compact = false} = {}) {
     const root = new St.BoxLayout({vertical: true, style_class: compact ? 'uthy-mini-content uthy-compact-content' : 'uthy-mini-content'});
     const readings = new St.BoxLayout({style_class: 'uthy-mini-readings', x_expand: true});
-    const download = makeCell({label: 'DOWNLOAD', arrow: '↓', color: options.downloadColor, speed: data.downloadMBps});
-    const upload = makeCell({label: 'UPLOAD', arrow: '↑', color: options.uploadColor, speed: data.uploadMBps});
+    const download = makeCell({label: 'DOWNLOAD', arrow: '↓', color: options.downloadColor,
+        speed: data.downloadMBps, motion: options.motion});
+    const upload = makeCell({label: 'UPLOAD', arrow: '↑', color: options.uploadColor,
+        speed: data.uploadMBps, motion: options.motion});
     readings.add_child(download.cell);
     readings.add_child(upload.cell);
     root.add_child(readings);
@@ -47,11 +49,19 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
     status.clutter_text.ellipsize = 3;
     root.add_child(status);
 
+    const syncCell = (cell, next) => {
+        const reading = formatSpeed(next);
+        if (cell.lastReading !== null && cell.lastReading !== reading && cell.motion)
+            cell.motion.pulse(cell.value, 1.04, 170);
+        cell.lastReading = reading;
+        cell.value.text = reading;
+    };
+
     return {
         actor: root,
         update(next) {
-            download.value.text = formatSpeed(next.downloadMBps);
-            upload.value.text = formatSpeed(next.uploadMBps);
+            syncCell(download, next.downloadMBps);
+            syncCell(upload, next.uploadMBps);
             download.value.accessible_name = `Download: ${formatSpeed(next.downloadMBps)}`;
             upload.value.accessible_name = `Upload: ${formatSpeed(next.uploadMBps)}`;
             status.text = connectionText(next);

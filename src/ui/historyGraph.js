@@ -44,7 +44,7 @@ export function createHistoryGraph({height = 42, downloadColor = '#27C9FF', uplo
                 if (!samples.length)
                     continue;
                 cr.setSourceRGBA(...trace.color);
-                cr.beginPath();
+                cr.newPath();
                 samples.forEach((sample, index) => {
                     const x = samples.length === 1 ? 0 : index / (samples.length - 1) * width;
                     const value = Math.max(0, sample[trace.key] ?? 0);

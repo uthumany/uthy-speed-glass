@@ -54,8 +54,16 @@ export function createExpandedWidget(data, options) {
         actor: root,
         update(next) {
             const stats = next.statistics ?? {};
-            updateSpeedGauge(downloadGauge, next.downloadMBps, stats.downloadPeakMBps, options.motion);
-            updateSpeedGauge(uploadGauge, next.uploadMBps, stats.uploadPeakMBps, options.motion);
+            // The meter follows the last 30 samples (about 30 s at the default
+            // interval) so a burst does not pin the scale for the rest of the
+            // session; the session peak is still what the Peak label reports.
+            const recent = Array.isArray(next.history) ? next.history.slice(-30) : [];
+            const recentDownload = recent.reduce((max, item) => Math.max(max, item.downloadMBps ?? 0), 0);
+            const recentUpload = recent.reduce((max, item) => Math.max(max, item.uploadMBps ?? 0), 0);
+            updateSpeedGauge(downloadGauge, next.downloadMBps, stats.downloadPeakMBps,
+                options.motion, recentDownload);
+            updateSpeedGauge(uploadGauge, next.uploadMBps, stats.uploadPeakMBps,
+                options.motion, recentUpload);
             rx.value.text = formatBytes(stats.downloadTotalBytes);
             tx.value.text = formatBytes(stats.uploadTotalBytes);
             downAverage.value.text = formatSpeed(stats.downloadAverageMBps);

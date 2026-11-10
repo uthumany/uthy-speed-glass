@@ -33,7 +33,9 @@ export function createHistoryGraph({height = 42, downloadColor = '#27C9FF', uplo
             cr.setLineCap(1); // ROUND
             cr.setLineJoin(1);
 
-            const maxValue = Math.max(0.1, ...samples.flatMap(item => [
+            // A 0.1 MB/s floor flattened every trace on a slow or idle link,
+            // which reads as "no traffic"; 0.01 MB/s still keeps noise small.
+            const maxValue = Math.max(0.01, ...samples.flatMap(item => [
                 item.downloadMBps ?? 0, item.uploadMBps ?? 0,
             ]));
             const traces = [

@@ -36,7 +36,7 @@ export function createSpeedGauge({title, arrow, color, motion = null, compact = 
     return root;
 }
 
-export function updateSpeedGauge(gauge, speed, peak, motion = gauge._uthyMotion) {
+export function updateSpeedGauge(gauge, speed, peak, motion = gauge._uthyMotion, scale = null) {
     const reading = formatSpeed(speed);
     const changed = gauge._uthyLastReading !== null && gauge._uthyLastReading !== reading;
     gauge._uthyLastReading = reading;
@@ -46,8 +46,12 @@ export function updateSpeedGauge(gauge, speed, peak, motion = gauge._uthyMotion)
         gauge._uthyPeakLabel.text = `Peak ${formatSpeed(peak)}`;
 
     const finiteSpeed = Number.isFinite(speed) ? Math.max(0, speed) : 0;
-    const finitePeak = Number.isFinite(peak) ? Math.max(0, peak) : 0;
-    const width = Math.max(8, Math.round(180 * Math.min(1, finiteSpeed / Math.max(2, finitePeak * 1.15, 10))));
+    // Scale the meter to recent activity. The span used to be at least
+    // 10 MB/s, so on any slower link the bar sat near the start of its travel
+    // and a working monitor looked idle.
+    const finiteScale = Number.isFinite(scale) ? Math.max(0, scale) : 0;
+    const span = Math.max(0.1, finiteScale, finiteSpeed) * 1.15;
+    const width = Math.max(8, Math.round(180 * Math.min(1, finiteSpeed / span)));
     if (motion)
         motion.animateWidth(gauge._uthyFill, width, MOTION.meter);
     else

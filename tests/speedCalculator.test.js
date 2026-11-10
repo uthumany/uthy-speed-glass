@@ -48,3 +48,17 @@ test('invalid interface/counters clear the baseline and formatting hides unavail
     assert.equal(formatSpeed(null), '-- MB/s');
     assert.equal(formatSpeed(1.234), '1.2 MB/s');
 });
+
+test('picks the unit that keeps a rate readable', () => {
+    // Rates below 0.05 MB/s used to print as "0.0 MB/s", which read as if the
+    // monitor had stopped measuring, so small rates keep their own unit.
+    assert.equal(formatSpeed(0), '0 B/s');
+    assert.equal(formatSpeed(0.0005), '500 B/s');
+    assert.equal(formatSpeed(0.02), '20.0 KB/s');
+    assert.equal(formatSpeed(0.6), '600 KB/s');
+    assert.equal(formatSpeed(3.3), '3.3 MB/s');
+    assert.equal(formatSpeed(128), '128 MB/s');
+    assert.equal(formatSpeed(2500), '2.50 GB/s');
+    assert.equal(formatSpeed(-1), '-- MB/s');
+    assert.equal(formatSpeed(Number.NaN), '-- MB/s');
+});

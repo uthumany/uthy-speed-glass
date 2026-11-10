@@ -55,8 +55,27 @@ export class SpeedCalculator {
     }
 }
 
-export function formatSpeed(value, decimals = 1) {
+const SPEED_UNITS = [
+    {limit: 1_000, divisor: 1, suffix: 'B/s', small: 0, large: 0},
+    {limit: 1_000_000, divisor: 1_000, suffix: 'KB/s', small: 1, large: 0},
+    {limit: 1_000_000_000, divisor: 1_000_000, suffix: 'MB/s', small: 1, large: 0},
+    {limit: Number.POSITIVE_INFINITY, divisor: 1_000_000_000, suffix: 'GB/s', small: 2, large: 2},
+];
+
+/**
+ * Format a rate for display, choosing the unit from the value.
+ *
+ * Every rate used to be printed as MB/s with one decimal, so anything below
+ * 0.05 MB/s — 50 KB/s, which covers most ordinary browsing — read as
+ * `0.0 MB/s` and looked like the monitor was not measuring at all. Rates stay
+ * decimal (1 KB/s is 1000 B/s); they are never binary and never bits.
+ */
+export function formatSpeed(value) {
     if (!Number.isFinite(value) || value < 0)
         return '-- MB/s';
-    return `${value.toFixed(decimals)} MB/s`;
+    const bytesPerSecond = value * BYTES_PER_DECIMAL_MEGABYTE;
+    const unit = SPEED_UNITS.find(candidate => bytesPerSecond < candidate.limit)
+        ?? SPEED_UNITS[SPEED_UNITS.length - 1];
+    const scaled = bytesPerSecond / unit.divisor;
+    return `${scaled.toFixed(scaled < 100 ? unit.small : unit.large)} ${unit.suffix}`;
 }

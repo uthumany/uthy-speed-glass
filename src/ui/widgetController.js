@@ -110,6 +110,30 @@ export class WidgetController {
         // the card's focus ring is swapped in here rather than in CSS.
         this._focusInId = this.actor.connect('key-focus-in', () => this._setFocused(true));
         this._focusOutId = this.actor.connect('key-focus-out', () => this._setFocused(false));
+        // A chrome actor never receives key focus on its own: Tab on the
+        // desktop does not reach it and a press does not grab focus, so the
+        // ring above would be unreachable. Hand focus over when the widget is
+        // pressed, which also lets Tab walk the controls from there, and let
+        // Escape release it again.
+        this._pressId = this.actor.connect('button-press-event', () => {
+            this.actor.grab_key_focus();
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this._keyId = this.actor.connect('key-press-event', (_actor, event) => {
+            const symbol = event.get_key_symbol();
+            if (symbol === Clutter.KEY_Escape) {
+                global.stage.set_key_focus(null);
+                return Clutter.EVENT_STOP;
+            }
+            const backwards = symbol === Clutter.KEY_ISO_Left_Tab
+                || symbol === Clutter.KEY_Up || symbol === Clutter.KEY_Left
+                || Boolean(event.get_state() & Clutter.ModifierType.SHIFT_MASK);
+            if (symbol === Clutter.KEY_Tab || symbol === Clutter.KEY_ISO_Left_Tab
+                || symbol === Clutter.KEY_Up || symbol === Clutter.KEY_Down
+                || symbol === Clutter.KEY_Left || symbol === Clutter.KEY_Right)
+                return this._cycleFocus(backwards ? -1 : 1);
+            return Clutter.EVENT_PROPAGATE;
+        });
 
         Main.layoutManager.addChrome(this.actor, {affectsStruts: false, trackFullscreen: false});
         this._applyGeometry(true);
@@ -225,7 +249,7 @@ export class WidgetController {
         this._icons.destroy();
         this._motion.destroy();
         this._dragController.destroy();
-        for (const id of [this._focusInId, this._focusOutId]) {
+        for (const id of [this._focusInId, this._focusOutId, this._pressId, this._keyId]) {
             if (!id)
                 continue;
             try {
@@ -236,6 +260,8 @@ export class WidgetController {
         }
         this._focusInId = 0;
         this._focusOutId = 0;
+        this._pressId = 0;
+        this._keyId = 0;
         if (this._monitorSignalId) {
             try {
                 Main.layoutManager.disconnect(this._monitorSignalId);
@@ -378,6 +404,36 @@ export class WidgetController {
         const fontSize = this._settings.get('font-size');
         this.actor.set_style(cardSurfaceStyle({radius, fontSize, alpha, focused: this._focused}));
         this._toolbar.set_style(toolbarSpecularStyle({radius}));
+    }
+
+    /**
+     * Move keyboard focus to the next or previous control.
+     *
+     * St does not traverse into the children of a chrome actor on Tab, so the
+     * widget walks its own buttons: every St.Button in the tree is a stop, the
+     * cycle wraps, and the focused button keeps the theme's `:focus` ring.
+     * Enter and Space then activate it, because St.Button handles those keys
+     * itself.
+     */
+    _cycleFocus(direction) {
+        const stops = [];
+        const collect = actor => {
+            if (actor instanceof St.Button && actor.visible && actor.mapped)
+                stops.push(actor);
+            for (const child of actor.get_children())
+                collect(child);
+        };
+        collect(this.actor);
+        if (!stops.length)
+            return Clutter.EVENT_PROPAGATE;
+
+        const current = global.stage.get_key_focus();
+        const index = stops.indexOf(current);
+        const next = index < 0
+            ? (direction > 0 ? 0 : stops.length - 1)
+            : (index + direction + stops.length) % stops.length;
+        stops[next].grab_key_focus();
+        return Clutter.EVENT_STOP;
     }
 
     _setFocused(focused) {

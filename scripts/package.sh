@@ -10,7 +10,7 @@ trap 'rm -rf "$TEMP"' EXIT
 STAGE="$TEMP/$UUID"
 mkdir -p "$STAGE"
 cp -a "$ROOT/extension.js" "$ROOT/prefs.js" "$ROOT/metadata.json" "$ROOT/stylesheet.css" "$STAGE/"
-cp -a "$ROOT/src" "$ROOT/schemas" "$STAGE/"
+cp -a "$ROOT/src" "$ROOT/schemas" "$ROOT/icons" "$STAGE/"
 cp -a "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || true
 glib-compile-schemas --strict "$STAGE/schemas"
 
@@ -55,6 +55,9 @@ required = {'metadata.json', 'extension.js', 'prefs.js', 'stylesheet.css', 'sche
 missing = required - names
 if missing:
     raise SystemExit(f'Package missing required paths: {sorted(missing)}')
+# The bundled 3D control icons are loaded at runtime, so the ZIP must carry them.
+if not any(name.startswith('icons/') and name.endswith('.svg') for name in names):
+    raise SystemExit('Package is missing the bundled icons/ assets')
 if any(name.startswith('/') or '..' in pathlib.PurePosixPath(name).parts for name in names):
     raise SystemExit('Package contains unsafe paths')
 print(f'PASS: package layout ({len(names)} files)')

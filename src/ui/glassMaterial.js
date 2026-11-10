@@ -100,9 +100,16 @@ export function cardSurfaceStyle({radius, fontSize, alpha, focused = false}) {
  * The sheen on the title strip: the top edge of the glass catching the key
  * light. It carries the inner specular highlight the card itself cannot,
  * because the card already spends its single shadow on the cast shadow.
+ *
+ * The strip also gets a dark base under the sheen. Without it the sheen and a
+ * bright wallpaper together lift the strip above the card's own tint, and the
+ * brand label measured 4.16:1 against it at the minimum transparency, short
+ * of the 4.5:1 this text size needs. The base holds the strip dark at every
+ * transparency setting.
  */
 export function toolbarSpecularStyle({radius}) {
     return [
+        'background-color: rgba(8, 14, 24, 0.38);',
         'background-gradient-direction: vertical;',
         'background-gradient-start: rgba(255, 255, 255, 0.14);',
         'background-gradient-end: rgba(255, 255, 255, 0.0);',

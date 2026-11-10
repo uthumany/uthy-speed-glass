@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Made the focus ring reachable: the widget takes key focus when pressed, cycles its buttons on Tab, Shift+Tab and the arrow keys, and releases focus on Escape. St never focuses a chrome actor, so the ring was previously unreachable.
+- Kept the title strip legible on bright wallpapers by giving it a dark base under the sheen; the brand label measured 4.16:1 at the minimum transparency before the fix and 7.99:1 after.
 - Reworked the widget surface as liquid glass with skeuomorphic depth: top-lit gradient tint, refraction rim, cast shadow, raised gauge tiles, engraved meter grooves and graph window, embossed text and hairline dividers.
 - Added a generated 3D control icon set with one shared light model, loaded through `Gio.FileIcon` with a symbolic-theme fallback, and fixed the installable ZIP so the bundled `icons/` assets ship with it.
 - Added spring motion for press, release, hover and fresh readings plus idle breathing for the brand mark, all transform-only and disabled by the Reduce motion preference.

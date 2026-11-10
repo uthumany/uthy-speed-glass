@@ -12,5 +12,8 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `zoom-controls-expanded.png`, `zoom-controls-hover.png` | Resting and hovered control row |
 | `icon-set-3d.png` | Generated 3D icon set rendered at 96 px |
 | `icon-set-16px.png` | The same set at its true 16 px render size, which is the size that matters for legibility |
+| `a11y-focus-card.png` | Focus ring around the card after pressing it |
+| `a11y-focus-control.png`, `a11y-focus-control-2.png` | The ring moving between controls on Tab |
+| `a11y-focus-released.png` | No ring left after Escape |
 
-The nested session reported no `St-WARNING`, no JavaScript error and no CSS parse warning. These captures are a verification aid, not a substitute for checking a physical Zorin OS 18.1 session: fractional scaling, high-contrast and light Shell themes, and multi-monitor behaviour remain untested.
+The nested session reported no `St-WARNING`, no JavaScript error and no CSS parse warning. Contrast ratios and the reduced-motion results measured in these sessions are recorded in [docs/ACCESSIBILITY.md](../docs/ACCESSIBILITY.md). These captures are a verification aid, not a substitute for checking a physical Zorin OS 18.1 session: fractional scaling, high-contrast and light Shell themes, and multi-monitor behaviour remain untested.

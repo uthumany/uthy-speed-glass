@@ -12,6 +12,7 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `zoom-controls-expanded.png`, `zoom-controls-hover.png` | Resting and hovered control row |
 | `icon-set-3d.png` | Generated 3D icon set rendered at 96 px |
 | `icon-set-16px.png` | The same set at its true 16 px render size, which is the size that matters for legibility |
+| `speed-slow-link.png` | A link throttled to 25 KB/s: the readout shows `B/s` and `KB/s` values and the graph keeps its trace, where a MB/s-only readout showed `0.0 MB/s` and a flat line |
 | `a11y-focus-card.png` | Focus ring around the card after pressing it |
 | `a11y-focus-control.png`, `a11y-focus-control-2.png` | The ring moving between controls on Tab |
 | `a11y-focus-released.png` | No ring left after Escape |

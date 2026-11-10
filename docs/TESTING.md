@@ -32,7 +32,7 @@ Known implementation limit: optional gateway ping currently discovers only IPv4 
 ## Functional tests to perform on Zorin
 
 1. Install through the script, enable the extension, and confirm both rates initially show `-- MB/s` before a second sample.
-2. Generate known local RX/TX traffic and compare displayed rates with byte-counter deltas over the same sampling interval; verify decimal MB/s, not Mbps.
+2. Generate known local RX/TX traffic and compare displayed rates with byte-counter deltas over the same sampling interval; verify decimal byte units, not Mbps. Include a deliberately slow transfer (`curl --limit-rate 25k`), which should read as roughly `25.0 KB/s` rather than `0.0 MB/s`, and confirm the speed meter moves on that link.
 3. Test automatic choice and each visible interface, including wired, Wi-Fi, USB tethering, and virtual interfaces where present.
 4. Disconnect, reconnect, change interface, pause/resume, and suspend/resume; ensure each transition returns through a fresh baseline without a spike.
 5. Check zero traffic, counter reset, missing interface, missing NetworkManager, unavailable `ping`, missing route, ping timeout, and extension disable while a ping is active.

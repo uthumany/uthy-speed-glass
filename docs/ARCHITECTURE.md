@@ -30,7 +30,7 @@ flowchart TD
     C --> D{Baseline exists and sample is valid?}
     D -->|No| E[Set baseline; report initializing or disconnected]
     D -->|Yes| F[Counter deltas divided by elapsed seconds]
-    F --> G[Decimal MB/s: bytes per second / 1,000,000]
+    F --> G[Decimal MB/s internally, shown as B/s, KB/s, MB/s or GB/s]
     G --> H[Bounded history, averages, peaks and byte totals]
     E --> I[Widget state and honest unavailable values]
     H --> I

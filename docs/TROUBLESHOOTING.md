@@ -28,6 +28,10 @@ That is expected before a valid second counter sample. It also appears after an 
 
 Use the expanded interface button or preferences to select `Automatic` or a visible interface. If a selected interface disappears, the monitor reports disconnected and waits; choosing another interface creates a fresh baseline and avoids a spike.
 
+## The reading is small or keeps changing unit
+
+Rates are decimal and the unit follows the value, so an idle link honestly reads `0 B/s` or a few hundred `B/s`. Loading a page usually averages tens of KB/s, which is 0.02–0.2 MB/s, and the widget shows that as `KB/s` rather than rounding it to `0.0 MB/s`. The speed meter scales to the busiest of the last 30 samples, so it moves on slow links as well. If a reading still looks wrong, compare it against `/proc/net/dev` deltas over the same interval.
+
 ## Ping is missing or times out
 
 Ping is off by default. When enabled, it targets only the local default gateway, requires the system `ping` utility, and runs every 10 seconds. Missing gateway, missing binary, timeout, or subprocess failure affects only latency display; RX/TX monitoring continues. Disable the setting to stop ping.

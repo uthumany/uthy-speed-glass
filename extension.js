@@ -11,7 +11,9 @@ export default class UthySpeedGlassExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._settingsManager = new SettingsManager(this._settings);
-        this.loadStylesheet();
+        this._theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
+        this._stylesheet = this.dir.get_child('stylesheet.css');
+        this._theme.load_stylesheet(this._stylesheet);
 
         let controller = null;
         this._monitor = new NetworkMonitor(this._settingsManager, data => controller?.update(data));
@@ -46,7 +48,9 @@ export default class UthySpeedGlassExtension extends Extension {
         this._indicator = null;
         this._settingsManager = null;
         this._settings = null;
-        this.unloadStylesheet();
+        this._theme?.unload_stylesheet(this._stylesheet);
+        this._theme = null;
+        this._stylesheet = null;
     }
 
     _createPanelIndicator() {

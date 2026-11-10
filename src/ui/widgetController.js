@@ -4,26 +4,15 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {createMiniWidget} from './miniWidget.js';
 import {createExpandedWidget} from './expandedWidget.js';
 import {DragController} from './dragController.js';
+import {IconFactory} from './iconFactory.js';
+import {Motion} from './motion.js';
+import {cardSurfaceStyle, toolbarSpecularStyle} from './glassMaterial.js';
 
 const MODE_SIZES = {
     mini: {width: 280, height: 136},
     compact: {width: 340, height: 164},
     expanded: {width: 500, height: 310},
 };
-
-function makeButton(iconName, label, onClicked) {
-    const icon = new St.Icon({icon_name: iconName, style_class: 'uthy-toolbar-icon', icon_size: 14});
-    const button = new St.Button({
-        style_class: 'uthy-icon-button',
-        can_focus: true,
-        reactive: true,
-        track_hover: true,
-        accessible_name: label,
-        child: icon,
-    });
-    button.connect('clicked', onClicked);
-    return {button, icon};
-}
 
 function isValidMode(mode) {
     return Object.hasOwn(MODE_SIZES, mode) ? mode : 'mini';
@@ -42,9 +31,13 @@ export class WidgetController {
         this._mode = isValidMode(settings.displayMode);
         this._minimized = false;
         this._destroyed = false;
+        this._focused = false;
         this._expandedControls = null;
         this._modeBeforeMinimize = this._mode;
         this._sizeBeforeMinimize = null;
+
+        this._motion = new Motion(Boolean(settings.get('reduce-motion')));
+        this._icons = new IconFactory({extension, motion: this._motion});
 
         this.actor = new St.BoxLayout({
             vertical: true,
@@ -55,22 +48,39 @@ export class WidgetController {
             accessible_name: 'Uthy Speed Glass network monitor',
         });
         this._toolbar = new St.BoxLayout({style_class: 'uthy-toolbar', x_expand: true});
-        this._dragHandle = new St.Widget({
+        this._dragHandle = new St.BoxLayout({
             style_class: 'uthy-drag-handle',
             reactive: true,
             can_focus: true,
             x_expand: true,
         });
-        this._dragHandle.add_child(new St.Label({text: 'UTHY  /  SPEED GLASS', style_class: 'uthy-brand'}));
+        this._brandIcon = this._icons.createIcon({iconName: 'droplet-symbolic', iconSize: 14,
+            styleClass: 'uthy-brand-icon'});
+        this._dragHandle.add_child(this._brandIcon);
+        this._brandLabel = new St.Label({text: 'UTHY  /  SPEED GLASS', style_class: 'uthy-brand',
+            x_expand: true});
+        this._dragHandle.add_child(this._brandLabel);
         this._toolbar.add_child(this._dragHandle);
 
-        this._pin = makeButton('changes-allow-symbolic', 'Pin widget position', () => this._togglePin());
+        this._pin = this._icons.createButton({
+            iconName: 'pin-symbolic', accessibleName: 'Pin widget position',
+            onClicked: () => this._togglePin(),
+        });
         this._toolbar.add_child(this._pin.button);
-        this._minimize = makeButton('window-minimize-symbolic', 'Minimize widget', () => this.minimize());
+        this._minimize = this._icons.createButton({
+            iconName: 'minimize-symbolic', accessibleName: 'Minimize widget',
+            onClicked: () => this.minimize(),
+        });
         this._toolbar.add_child(this._minimize.button);
-        this._expand = makeButton('view-more-symbolic', 'Expand widget', () => this.expand());
+        this._expand = this._icons.createButton({
+            iconName: 'expand-symbolic', accessibleName: 'Expand widget',
+            onClicked: () => this.expand(),
+        });
         this._toolbar.add_child(this._expand.button);
-        this._close = makeButton('window-close-symbolic', 'Hide widget', () => this.setVisible(false));
+        this._close = this._icons.createButton({
+            iconName: 'close-symbolic', accessibleName: 'Hide widget',
+            onClicked: () => this.setVisible(false),
+        });
         this._toolbar.add_child(this._close.button);
         this.actor.add_child(this._toolbar);
 
@@ -96,6 +106,10 @@ export class WidgetController {
             isPinned: () => Boolean(this._settings.get('pinned')),
         });
         this._monitorSignalId = Main.layoutManager.connect('monitors-changed', () => this._onMonitorsChanged());
+        // St resolves an actor's inline style above the theme stylesheet, so
+        // the card's focus ring is swapped in here rather than in CSS.
+        this._focusInId = this.actor.connect('key-focus-in', () => this._setFocused(true));
+        this._focusOutId = this.actor.connect('key-focus-out', () => this._setFocused(false));
 
         Main.layoutManager.addChrome(this.actor, {affectsStruts: false, trackFullscreen: false});
         this._applyGeometry(true);
@@ -129,6 +143,10 @@ export class WidgetController {
             this.setVisible(Boolean(this._settings.get('show-widget')));
         } else if (changedKey === 'pinned') {
             this._syncButtons();
+        } else if (changedKey === 'reduce-motion') {
+            this._motion.setReducedMotion(Boolean(this._settings.get('reduce-motion')));
+            this._renderContent();
+            this._syncBrandMotion();
         } else if (changedKey === 'remember-position') {
             this._applyGeometry(true);
         } else if (['widget-x', 'widget-y', 'widget-width', 'widget-height'].includes(changedKey)) {
@@ -149,6 +167,7 @@ export class WidgetController {
             this.actor.show();
         else
             this.actor.hide();
+        this._syncBrandMotion();
     }
 
     expand() {
@@ -202,7 +221,21 @@ export class WidgetController {
         if (this._destroyed)
             return;
         this._destroyed = true;
+        this._motion.stopIdle(this._brandIcon);
+        this._icons.destroy();
+        this._motion.destroy();
         this._dragController.destroy();
+        for (const id of [this._focusInId, this._focusOutId]) {
+            if (!id)
+                continue;
+            try {
+                this.actor.disconnect(id);
+            } catch (_error) {
+                // The actor may already be unmanaged during teardown.
+            }
+        }
+        this._focusInId = 0;
+        this._focusOutId = 0;
         if (this._monitorSignalId) {
             try {
                 Main.layoutManager.disconnect(this._monitorSignalId);
@@ -242,28 +275,37 @@ export class WidgetController {
 
     _createExpandedControls() {
         const row = new St.BoxLayout({style_class: 'uthy-controls-row', x_expand: true});
-        const pause = makeButton(this._data.paused ? 'media-playback-start-symbolic' : 'media-playback-pause-symbolic',
-            this._data.paused ? 'Resume monitoring' : 'Pause monitoring', () => {
+        const paused = Boolean(this._data.paused);
+        const pause = this._icons.createButton({
+            iconName: paused ? 'play-symbolic' : 'pause-symbolic',
+            accessibleName: paused ? 'Resume monitoring' : 'Pause monitoring',
+            onClicked: () => {
                 if (this._monitor.paused)
                     this._monitor.resume();
                 else
                     this._monitor.pause();
-            });
-        const iface = new St.Button({
-            style_class: 'uthy-control-button', can_focus: true, reactive: true,
-            accessible_name: 'Select network interface',
-            label: this._interfaceButtonLabel(),
+            },
         });
-        iface.connect('clicked', () => this._cycleInterface());
-        const reset = makeButton('view-refresh-symbolic', 'Reset session statistics', () => this._monitor.resetStatistics());
-        const prefs = makeButton('preferences-system-symbolic', 'Open preferences', () => this._extension.openPreferences());
+        const iface = this._icons.createButton({
+            label: this._interfaceButtonLabel(),
+            styleClass: 'uthy-control-button',
+            accessibleName: 'Select network interface',
+            onClicked: () => this._cycleInterface(),
+        });
+        const reset = this._icons.createButton({
+            iconName: 'refresh-symbolic', accessibleName: 'Reset session statistics',
+            onClicked: () => this._monitor.resetStatistics(),
+        });
+        const prefs = this._icons.createButton({
+            iconName: 'settings-symbolic', accessibleName: 'Open preferences',
+            onClicked: () => this._extension.openPreferences(),
+        });
         row.add_child(pause.button);
-        row.add_child(iface);
+        row.add_child(iface.button);
         row.add_child(reset.button);
         row.add_child(prefs.button);
-        row._uthyPauseIcon = pause.icon;
-        row._uthyPauseButton = pause.button;
-        row._uthyInterfaceButton = iface;
+        row._uthyPause = pause;
+        row._uthyInterface = iface;
         return {actor: row, sync: () => this._syncExpandedControls()};
     }
 
@@ -271,9 +313,10 @@ export class WidgetController {
         if (!this._expandedControls)
             return;
         const row = this._expandedControls.actor;
-        row._uthyPauseIcon.icon_name = this._data.paused ? 'media-playback-start-symbolic' : 'media-playback-pause-symbolic';
-        row._uthyPauseButton.accessible_name = this._data.paused ? 'Resume monitoring' : 'Pause monitoring';
-        row._uthyInterfaceButton.label = this._interfaceButtonLabel();
+        const paused = Boolean(this._data.paused);
+        this._icons.setIcon(row._uthyPause, paused ? 'play-symbolic' : 'pause-symbolic');
+        this._icons.setAccessibleName(row._uthyPause, paused ? 'Resume monitoring' : 'Pause monitoring');
+        this._icons.setLabel(row._uthyInterface, this._interfaceButtonLabel());
     }
 
     _interfaceButtonLabel() {
@@ -297,13 +340,22 @@ export class WidgetController {
 
     _syncButtons() {
         const pinned = Boolean(this._settings.get('pinned'));
-        this._pin.icon.icon_name = pinned ? 'changes-prevent-symbolic' : 'changes-allow-symbolic';
-        this._pin.button.accessible_name = pinned ? 'Unpin widget position' : 'Pin widget position';
-        this._minimize.button.visible = !this._minimized && this._mode !== 'mini';
-        this._expand.button.visible = this._minimized || this._mode !== 'expanded';
-        this._expand.icon.icon_name = this._minimized ? 'view-more-symbolic' : 'view-more-symbolic';
-        this._close.button.accessible_name = 'Hide widget';
+        this._icons.setIcon(this._pin, pinned ? 'pin-locked-symbolic' : 'pin-symbolic');
+        this._icons.setAccessibleName(this._pin, pinned ? 'Unpin widget position' : 'Pin widget position');
+        this._icons.setVisible(this._minimize, !this._minimized && this._mode !== 'mini');
+        this._icons.setVisible(this._expand, this._minimized || this._mode !== 'expanded');
+        this._icons.setAccessibleName(this._close, 'Hide widget');
         this._syncExpandedControls();
+    }
+
+    /** Idle breathing runs only while the card is actually on screen. */
+    _syncBrandMotion() {
+        if (this._destroyed)
+            return;
+        if (this.actor.visible && !this._motion.reducedMotion)
+            this._motion.breathe(this._brandIcon);
+        else
+            this._motion.stopIdle(this._brandIcon);
     }
 
     _appearanceOptions() {
@@ -311,7 +363,8 @@ export class WidgetController {
             downloadColor: this._settings.downloadColor,
             uploadColor: this._settings.uploadColor,
             showGraphs: Boolean(this._settings.get('show-graphs')),
-            reduceMotion: Boolean(this._settings.get('reduce-motion')),
+            reduceMotion: this._motion.reducedMotion,
+            motion: this._motion,
             graphHeight: this._settings.get('graph-height'),
             pingEnabled: Boolean(this._settings.get('ping-enabled')),
         };
@@ -320,10 +373,18 @@ export class WidgetController {
     _applyAppearance() {
         if (!this.actor)
             return;
-        const transparency = Math.max(0.45, Math.min(0.96, this._settings.get('transparency') / 100));
+        const alpha = Math.max(0.45, Math.min(0.96, this._settings.get('transparency') / 100));
         const radius = this._settings.get('corner-radius');
         const fontSize = this._settings.get('font-size');
-        this.actor.set_style(`background-color: rgba(18, 28, 46, ${transparency.toFixed(2)}); border-radius: ${radius}px; font-size: ${fontSize}px;`);
+        this.actor.set_style(cardSurfaceStyle({radius, fontSize, alpha, focused: this._focused}));
+        this._toolbar.set_style(toolbarSpecularStyle({radius}));
+    }
+
+    _setFocused(focused) {
+        if (this._destroyed || this._focused === focused)
+            return;
+        this._focused = focused;
+        this._applyAppearance();
     }
 
     _applyGeometry(initial, forcePreset = false) {

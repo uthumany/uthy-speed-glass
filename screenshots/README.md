@@ -12,7 +12,7 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `zoom-title-strip.png` | The `UthyPing` name plate: recessed floor, inset press, dark upper lip, lit lower lip and engraved lettering |
 | `zoom-controls-expanded.png`, `zoom-controls-hover.png` | Resting and hovered control row; the icons carry their own depth and their buttons draw no frame, so hover is a soft wash |
 | `panel-indicator.png` | The bundled mark in the panel indicator |
-| `icon-set-3d.png` | The prepared icon set at 24, 48 and 96 px, and a magnified view of each icon |
+| `icon-set-3d.png` | The prepared icon set at 96 px, the size the sources are rendered at before they are trimmed |
 | `icon-set-16px.png` | The same set at its true 16 px render size, which is the size that matters for legibility |
 | `speed-slow-link.png` | A link throttled to 25 KB/s: the readout shows `B/s` and `KB/s` values and the graph keeps its trace, where a MB/s-only readout showed `0.0 MB/s` and a flat line |
 | `a11y-focus-card.png` | Focus ring around the card after pressing it |

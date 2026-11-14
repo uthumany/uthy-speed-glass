@@ -49,28 +49,32 @@ bash scripts/package-source.sh
 
 The installable build stages runtime files, compiles `gschemas.compiled`, checks the archive paths, and writes a SHA-256 file under `dist/`. If a compatible `gnome-extensions pack --out-dir` command exists, the script asks it to validate the staged extension; Python's standard library then creates the canonical sorted ZIP with normalized timestamps. When the GNOME packer is absent or fails, the same deterministic ZIP builder is used. `package-source.sh` creates a separate timestamp-normalized archive of the full project while excluding generated artifacts and caches.
 
-The runtime ZIP carries `icons/`, because the toolbar loads those assets at run time. `package.sh` fails if the staged archive has no bundled icon.
+The runtime ZIP carries `icons/`, because the toolbar loads those assets at run time. `package.sh` fails if the staged archive carries fewer than the fourteen bundled icons.
 
-## Regenerate the 3D icon set
+## Prepare the icon set
 
-`icons/` is generated output, not hand-drawn art. Every control icon is built from the same light model by `scripts/generate-icons.py`:
-
-```bash
-python3 scripts/generate-icons.py
-```
-
-The script is deterministic, needs only the Python standard library, and should be run after any change to the light model, the gradient or a glyph. Review the result at its true render size before committing; `librsvg2-bin` provides `rsvg-convert` if you want a quick preview:
+`assets/icons-source/` keeps the supplied skeuomorphic sources, one SVG per control. `icons/` is build output, not hand-edited art: `scripts/prepare-icons.py` renders each source at 256 px, floods the background away from the canvas border, drops any component that spans the canvas while hugging its edge (the flat plate and hairline frame that two of the sources still carried), trims each icon to its artwork, scales every icon so the artwork fills the same share of its box and writes a 96 px PNG:
 
 ```bash
-rsvg-convert -w 16 -h 16 icons/refresh-symbolic.svg -o /tmp/refresh.png
+sudo apt install librsvg2-bin        # provides rsvg-convert
+python3 scripts/prepare-icons.py
 ```
 
-St renders these SVGs through `Gio.FileIcon`. If an asset is missing at run time the icon factory falls back to the matching symbolic icon from the user's theme, so a partial install still shows a usable toolbar.
+The script needs `rsvg-convert` and Pillow, is deterministic, and should be run after replacing or editing a source icon. Review the result at its true render size before committing:
 
-Two St behaviours were established by rendering the set inside a nested Shell and must be respected by any new glyph:
+```bash
+for size in 16 24 48; do
+  rsvg-convert -w "$size" -h "$size" assets/icons-source/Reload.svg -o "/tmp/refresh-$size.png"
+done
+```
 
-1. **St.Icon defaults to symbolic style**, which flattens an icon into a monochrome mask and discards baked shading. The `uthy-3d-icon` class sets `-st-icon-style: regular` so the pre-shaded assets keep their lighting; the symbolic fallback deliberately keeps the default so the theme icon is tinted by the CSS colour.
-2. **An open arc path that is stroked is filled as well as stroked.** The attribute `fill="none"` is not honoured reliably when it comes from a wrapping group, and for an almost-closed arc the extra fill covers the hole. Build such glyphs from filled shapes instead: the refresh ring is a filled annulus sector with a separate solid arrowhead, and the padlock shackle is a closed arch. Verify any new glyph inside a nested session at 16 px before committing.
+St renders the PNGs through `Gio.FileIcon`. If an asset is missing at run time the icon factory falls back to the matching symbolic icon from the user's theme, so a partial install still shows a usable toolbar.
+
+Three St behaviours were established by rendering inside a nested Shell and must be respected by any new icon or control:
+
+1. **St.Icon defaults to symbolic style**, which flattens an icon into a monochrome mask and discards the artwork. The `uthy-3d-icon` class sets `-st-icon-style: regular` so the supplied assets keep their depth; the symbolic fallback deliberately keeps the default so the theme icon is tinted by the CSS colour.
+2. **An outer box-shadow is painted as a filled block behind an actor with no background, and an inset box-shadow is not painted at all.** The icon buttons are transparent by design, so their focus ring is a 2 px border that is reserved transparent in the resting state and only coloured on focus. Anything that needs a visible ring on a transparent actor must use a border.
+3. **The artwork must not be drawn inside a frame.** The supplied icons are complete objects; giving their buttons a plate, border or shadow doubles every edge. Keep the control material transparent and let the icon carry the depth.
 
 ## Install locally
 

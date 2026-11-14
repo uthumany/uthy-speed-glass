@@ -31,8 +31,15 @@ across a scripted session:
 | Escape | 0 | 0 |
 
 The card ring is drawn by swapping the card's single shadow for a two-pixel
-ring, so focusing the card never changes its layout. Each control keeps the
-theme's `:focus` ring, which is a cyan border plus a two-pixel glow.
+ring, so focusing the card never changes its layout. On the controls the ring
+is a 2 px border that is reserved transparent in the resting state and only
+coloured on focus, so focusing never resizes a control either. A border is used
+rather than a shadow because St paints an outer `box-shadow` as a filled block
+behind an actor that has no background, and does not paint an inset one at all:
+with the icon buttons deliberately transparent, a shadow ring either covered
+the icon or disappeared. Re-measured after the icon change, counting ring
+coloured pixels inside the card: 509 at rest (the metric icons themselves), 750
+with the first control focused, then 729 and 719 as focus moved on.
 
 ## Contrast
 

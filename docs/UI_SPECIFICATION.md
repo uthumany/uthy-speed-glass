@@ -43,17 +43,23 @@ Layout metrics — paddings, spacings, minimum sizes and font sizes — are unch
 
 ## Iconography
 
-`icons/` holds a generated 3D control set (pin, pinned pin, minimize, expand, close, pause, play, refresh, settings, droplet, plus download, upload and network marks). Every icon is produced by `scripts/generate-icons.py` from one light model — key light from the upper left, a gradient face falling from white to cool shadow, an embossed contact shadow below the glyph, and a specular bevel on the upper edge — so the toolbar reads as a single material. Icons are pre-shaded SVG loaded through `Gio.FileIcon`, which renders in St without theme dependencies; if an asset is missing the factory falls back to the matching symbolic icon from the user's theme.
+`icons/` holds the supplied skeuomorphic control set — brand, notification, pin, pinned pin, minimize, expand, close, pause, play, refresh, settings, share, download and upload — prepared by `scripts/prepare-icons.py` from the sources in `assets/icons-source/`. Every icon is a physical object with its own bevel, highlight and contact shadow, so nothing else draws depth for it: the control buttons have a transparent background, no border and no shadow, because a frame around a physical object only doubles every edge.
 
-Two St behaviours shape the set. `St.Icon` defaults to symbolic style, which would flatten the pre-shaded art into a monochrome mask, so the bundled icons request `-st-icon-style: regular` while the theme fallback stays symbolic and is tinted by CSS colour. And a stroked open arc path is also filled, which hides the hole of a ring, so arc glyphs are built from filled shapes — the refresh ring is a filled annulus sector with a solid head, and the padlock shackle is a closed arch.
+Two of the sources (`Close.svg`, `minus.svg`) still carried the flat near-white plate and the hairline border of the bitmap they were traced from. The preparation script floods that plate away from the canvas border, drops any remaining component that spans the canvas while hugging its edge, trims each icon to its artwork, and scales every icon so the artwork fills the same share of its box. The shipped files are 96 px PNGs loaded through `Gio.FileIcon`, which renders them in St without theme dependencies; if an asset is missing the factory falls back to the matching symbolic icon from the user's theme.
 
-The metric arrows (↓ ↑) stay typographic so they can carry the user's accent colour, and are embossed with `text-shadow` to match the icon depth.
+Two St behaviours shape the set. `St.Icon` defaults to symbolic style, which would flatten the artwork into a monochrome mask, so the bundled icons request `-st-icon-style: regular` while the theme fallback stays symbolic and is tinted by CSS colour. And St paints an outer `box-shadow` as a filled block when the actor has no background while ignoring an inset one, so the focus ring on a bare control is a 2 px border, reserved transparent in the resting state and coloured only on focus, which also keeps the control from resizing when it is focused.
+
+The download and upload marks are the bundled metric icons: 16 px in the mini rows and 18 px in the gauge headings. The statistics captions keep the typographic arrows (↓ ↑), which are embossed with `text-shadow`, and the widgets fall back to those arrows wherever the icon factory is not supplied.
+
+## Title strip
+
+The name plate is the drag handle itself: a dark floor (`rgba(2, 5, 12, 0.72)`), one inset shadow (`inset 0 5px 10px`) for the press, a dark upper lip and a lit lower lip. The lettering is engraved — `rgba(180, 201, 226, 0.96)` with a light `text-shadow` under each glyph — so it reads as cut into the surface; the captured session measures 10.4:1 between the glyphs and the floor. The tool name is **UthyPing**; the extension UUID stays `uthy-speed-glass@uthy` so existing installations and saved settings keep working.
 
 ## Mini
 
 ```text
 ┌────────────────────────────────────────┐
-│ ◈ UTHY / SPEED GLASS  pin  ▾  ×        │
+│ ◈ UthyPing            pin  ▾  ×        │
 │ ↓  -- MB/s             ↑  -- MB/s       │
 │   DOWNLOAD               UPLOAD          │
 │ ▂▄▆█▇▅▃             ▂▃▅█▆▄▂             │
@@ -67,7 +73,7 @@ Both rates remain visible simultaneously. Graphs are optional and the connection
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
-│ ◈ UTHY / SPEED GLASS     pin  minimize  ▾  ×              │
+│ ◈ UthyPing               pin  minimize  ▾  ×              │
 │ DOWNLOAD                               UPLOAD              │
 │ ↓  -- MB/s                              ↑  -- MB/s         │
 │ ━━━━━━━━━━━━━━━                         ━━━━━━━━━━━━━━━    │

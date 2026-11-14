@@ -68,9 +68,14 @@ The workflow is defined in `.github/workflows/validate.yml` and runs validation 
 - `src/network/pingMonitor.js`: optional local gateway ping via `Gio.Subprocess`, with a numeric-address argument, a timeout, and no shell.
 - `src/network/networkMonitor.js`: one refresh timeout, recovery states, bounded history (120 entries), optional ping scheduling, and service teardown.
 - `src/settings/settingsManager.js`: validates values read by the UI and bounds values written by geometry changes.
-- `src/ui/widgetController.js`: presentation states, panel/widget actions, mode composition, styling, and geometry.
-- `src/ui/miniWidget.js`, `expandedWidget.js`, `speedGauge.js`, `historyGraph.js`: rendering and presentation updates.
-- `src/ui/dragController.js`: pointer movement/resizing, geometry persistence, and monitor clamping.
+- `src/ui/widgetController.js`: presentation states, panel/widget actions, mode composition, styling, geometry, and the card's layer stack (backdrop, content column, resize grip, floating tray).
+- `src/ui/glassMaterial.js`: the material vocabulary — palette, tints, wells, grooves, plate and tray styles, the card's tint and focus ring, and the shared motion durations. Every inline style the widget sets comes from here.
+- `src/ui/glassBackdrop.js`: one `St.DrawingArea` painting the layers CSS cannot express — sheen, grid, deterministic grain and the specular rim lights — repainting only when the card is resized.
+- `src/ui/ledIndicator.js`: the 3D connection LED and the shared status line (LED plus interface name) used by the mini and expanded layouts.
+- `src/ui/iconFactory.js`: bundled PNG icons with a symbolic theme fallback, and the press/hover motion wiring for bare and raised controls.
+- `src/ui/miniWidget.js`, `expandedWidget.js`, `speedGauge.js`, `historyGraph.js`: rendering and presentation updates; the chart is a dual-layer Cairo area sparkline.
+- `src/ui/motion.js`: transform-only spring vocabulary (squash, overshoot, lift, raise, press-in, meter width, pulses, idle breathing) with a zero-duration reduced-motion mode.
+- `src/ui/dragController.js`: pointer movement/resizing, geometry persistence, and monitor clamping (with a bottom inset for the floating tray).
 - `prefs.js`: GTK4/Libadwaita control panel; settings synchronize through GSettings in a separate process.
 
 ## Measurement and data dependency

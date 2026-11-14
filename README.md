@@ -13,8 +13,11 @@ A native GNOME Shell extension for a floating, translucent network monitor. It r
 - NetworkManager D-Bus active-connection selection with route and sysfs fallbacks; automatic or manually selected Ethernet, Wi-Fi, USB-tethered, and visible virtual interfaces.
 - Session averages, peaks, and RX/TX totals.
 - Optional ping to the local IPv4 default gateway every ten seconds; off by default and no ping target is contacted while disabled.
-- GTK4/Libadwaita preferences for transparency, colors, text size, radius, graph height, sampling interval, reduced motion, and interface selection.
+- GTK4/Libadwaita preferences for transparency, colors, text size, graph height, sampling interval, reduced motion, and interface selection.
 - Supplied skeuomorphic 3D icon set on every control and metric mark, prepared by `scripts/prepare-icons.py` and drawn without frames, so each icon stays a physical object on the glass.
+- Square liquid-glass slab with a faint grid, a grain layer and silver rim lights, a floating control tray that hovers below the panel, and one glowing orange accent for anything focused, active or measured.
+- Live dual-layer area chart: gradient fills, a glow under each lit line, a haloed peak marker and a glowing live head on the newest sample.
+- 3D emerald connection LED beside the interface name, with tabular figures on every numeric readout so a changing digit never reflows its label.
 - Engraved **UthyPing** name plate: a deep inset recess in the title strip with the lettering cut into the surface.
 - Per-user installation, safe removal, local automated tests, schema validation, packaging, and GitHub Actions workflows.
 
@@ -68,7 +71,7 @@ Rates are decimal: `1 KB/s` is 1000 bytes per second and `1 MB/s` is 1,000,000. 
 ## Preferences
 
 - **Sampling:** 500, 1000, or 2000 ms; automatic or a currently visible interface; mini, compact, or expanded default layout.
-- **Appearance:** surface opacity, download/upload hex colors, font size, corner radius, graph height, and graph visibility.
+- **Appearance:** surface opacity, download/upload hex colors, font size, graph height, and graph visibility. Corners are square by design and are no longer a setting.
 - **Behavior:** remember geometry, reduce motion, and optional local-gateway ping.
 
 Move the widget from its title strip and resize it from the lower-right handle. Pinning locks movement but does not stop sampling. Reset session statistics from the expanded controls or panel menu.

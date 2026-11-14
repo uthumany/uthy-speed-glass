@@ -70,10 +70,13 @@ done
 
 St renders the PNGs through `Gio.FileIcon`. If an asset is missing at run time the icon factory falls back to the matching symbolic icon from the user's theme, so a partial install still shows a usable toolbar.
 
-Three St behaviours were established by rendering inside a nested Shell and must be respected by any new icon or control:
+Five St behaviours were established by rendering inside a nested Shell and must be respected by any new icon, surface or control:
 
 1. **St.Icon defaults to symbolic style**, which flattens an icon into a monochrome mask and discards the artwork. The `uthy-3d-icon` class sets `-st-icon-style: regular` so the supplied assets keep their depth; the symbolic fallback deliberately keeps the default so the theme icon is tinted by the CSS colour.
-2. **An outer box-shadow is painted as a filled block behind an actor with no background, and an inset box-shadow is not painted at all.** The icon buttons are transparent by design, so their focus ring is a 2 px border that is reserved transparent in the resting state and only coloured on focus. Anything that needs a visible ring on a transparent actor must use a border.
+2. **An outer box-shadow is painted as a filled block behind an actor with no background, and an inset box-shadow is not painted at all.** The title-strip buttons are transparent by design, so their focus ring is a 2 px border that is reserved transparent in the resting state and only coloured on focus. Anything that needs a visible ring on a transparent actor must use a border.
+3. **There is no backdrop sampling.** St 14 (GNOME Shell 46) has no `backdrop-filter`, no `filter` and no way for an actor to read what is painted behind it, so a glass slab cannot actually blur the desktop. Thickness is implied by a tint, a sheen, a grain layer and a bright 1 px rim instead; do not write CSS that claims a blur. Cairo is available to a `St.DrawingArea` through `import cairo from 'gi://cairo'`, but GJS exposes gradient stops as `addColorStopRGBA(offset, r, g, b, a)` — plain `addColorStop` does not exist.
+4. **`Clutter.BinLayout` fills a child that expands and centres one that does not**, and it has no alignment properties of its own (`x_align`/`y_align` on the layout raise "No property" errors). To pin a child to the bottom edge, fill the layer with an expanding column and let a `y_expand` spacer push the child down.
+5. **`font-feature-settings` is supported**, so tabular figures (`"tnum"`) can be requested for numeric readouts; `transform`, `filter` and repeating backgrounds are not, which is why the grid and the grain are painted in Cairo rather than declared in CSS.
 3. **The artwork must not be drawn inside a frame.** The supplied icons are complete objects; giving their buttons a plate, border or shadow doubles every edge. Keep the control material transparent and let the icon carry the depth.
 
 ## Install locally

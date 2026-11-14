@@ -41,6 +41,21 @@ the icon or disappeared. Re-measured after the icon change, counting ring
 coloured pixels inside the card: 509 at rest (the metric icons themselves), 750
 with the first control focused, then 729 and 719 as focus moved on.
 
+### The square orange design
+
+The focus ring is now the accent colour, `#FF8A1F`, on every stop: a two-pixel
+ring around the slab when the card holds focus, a reserved border coloured on
+the title-strip controls, and an orange rim on a focused tray plate. Re-measured
+in the redesigned session, counting ring-coloured pixels: 0 at rest, a ring
+around the card after a press, a ring on the first title-strip control after
+Tab, a ring on a tray plate four Tabs later, and 0 again after Escape. The ring
+still costs no layout on any stop.
+
+The tray plates are the one control that is *not* transparent, so their ring is
+a rim colour change rather than a reserved border; the resting rim is silver and
+the focused rim is the accent, which keeps the ring visible against both the
+plate and the tray.
+
 ## Contrast
 
 Contrast was measured on rendered pixels: the surface behind each text element
@@ -70,6 +85,25 @@ measured 4.16:1 at the minimum transparency. The strip now carries a dark base
 under the sheen, which holds it at 7.99:1 in the same conditions. No other text
 element failed in any tested condition.
 
+### The square orange palette
+
+Re-measured after the redesign, sampling the rendered pixels of the expanded
+card (accent `#FF8A1F`, wells, engraved labels and the emerald LED):
+
+| Element | Ratio |
+| --- | --- |
+| Metric value (`#F2F5F8`) on the recessed well | 13.2:1 |
+| Engraved `Peak` label (`#9DABB9`) on the well | 6.7:1 |
+| Status text (`#CBD5E0`) on the slab | 9.9:1 |
+| Statistic value (`#F2F5F8`) on the slab | 16.2:1 |
+| Orange meter fill against its groove | 10.4:1 |
+| Engraved name plate lettering on the recessed floor | 11.5:1 |
+
+All are above the 4.5:1 small-text threshold, and the meter and the LED are
+above the 3:1 non-text threshold. The engraved labels are deliberately the
+lowest of the set: they are secondary text at 9–10 px, and they still clear the
+threshold with room to spare.
+
 ### A layering constraint worth keeping
 
 The card paints its tint twice: once as `background-color` and again as the
@@ -96,6 +130,19 @@ preference while the widget was running:
 
 Turning the preference on while the widget runs also stops the idle breathing
 immediately, and turning it off restarts it.
+
+The redesigned controls add one more animation to that set: a raised tray plate
+travels two pixels towards the pointer on hover and one pixel down when pressed.
+Measured on rendered pixels by tracking the centre of the green refresh icon in
+both modes:
+
+| Preference | Icon centre, rest → hover | Shift |
+| --- | --- | --- |
+| Reduce motion off | 29.52 px → 27.81 px | −1.71 px, and the icon grows |
+| Reduce motion on | 29.52 px → 29.52 px | 0.00 px, identical pixels |
+
+So the reduced-motion mode suppresses the travel and the scale entirely while
+the hover wash and every other cue stay visible.
 
 ## What is not covered
 

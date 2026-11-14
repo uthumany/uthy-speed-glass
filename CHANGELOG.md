@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Rebuilt the surface as a square liquid-glass slab over a skeuomorphic body. Corners are square everywhere — the corner-radius setting is gone — and the palette is one glowing orange accent (`#FF8A1F`) for anything focused, active or measured, over near-blacks, off-whites and silver rims.
+- Added `src/ui/glassBackdrop.js`: a single DrawingArea paints the layers St cannot express in CSS — a top sheen, a 22 px light-grey grid, a deterministic grain at 0.03 opacity, and the bright top / dark bottom rim lights. It repaints only when the card is resized.
+- Added `src/ui/ledIndicator.js`: the connection state is now a 3D emerald LED beside the interface name instead of a sentence, with an outer bloom, a lit dome, an inner shadow, a specular highlight and a dark contact ring. The colour carries the state; the accessible name repeats it in words.
+- Rebuilt the history chart as a live dual-layer area sparkline: a faint grid, gradient fills that fade downward, a glow under each lit line, a haloed peak marker with a leader line, and a glowing live head on the newest sample. With no samples yet the grid alone is drawn.
+- Made the metric cards recessed glass wells — an inset dark press plus a lit lower and right border, because St only honours one shadow per declaration — and turned the meter tracks into square grooves with a bevelled, glowing fill that casts a small shadow onto the groove.
+- Turned the four expanded controls into a floating tray that hovers ten pixels below the panel's bottom edge with a wide cast shadow, so the stack reads as desktop, panel, controls. Move clamping keeps a bottom inset so the tray stays on screen.
+- Made the tray controls physical buttons: raised at rest, travelling two pixels towards the pointer on hover, and pressing one pixel into their own inset shadow when active. The title-strip icons stay frameless.
+- Added `font-feature-settings: "tnum"` to every numeric readout so a changing digit never reflows the label beside it, and engraved the secondary labels with a light edge below the glyph.
+- Applied the same material to the preferences window: square corners, an orange accent, and sliders whose trough is a groove and whose thumb is a lit, bevelled handle.
+- Moved the download accent to `#FF8A1F` and the upload accent to `#93A6B8` so both metrics sit inside the new palette; existing installations keep the colours they already saved.
 - Replaced the whole icon set with the supplied skeuomorphic 3D artwork. `scripts/prepare-icons.py` renders each source, floods away the flat plate and hairline frame that two of them still carried, trims each icon to its artwork and writes a 96 px PNG, so no icon is drawn inside a frame any more.
 - Renamed the tool to **UthyPing** and gave the name a deeply pressed-in neumorphic plate: a dark recess with an inset shadow, a dark upper lip and a lit lower lip, and engraved lettering that measures 10.4:1 against the floor. The extension UUID is unchanged, so existing installs and settings keep working.
 - Removed the plate, border and shadow from the icon buttons. The supplied icons are physical objects with their own bevel and contact shadow, so a frame around them only doubled every edge; hover is now a soft wash and the press squash comes from the motion helper.

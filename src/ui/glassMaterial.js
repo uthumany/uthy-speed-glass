@@ -1,22 +1,60 @@
 // Material system for the UthyPing widget.
 //
-// The model is adapted from the QuickLiquid liquid-glass description
-// (https://quickliquid.vercel.app/): one physical definition of tint, sheen,
-// rim light, refraction edge and spring motion. GNOME Shell's St toolkit has
-// no DOM, WebGL or backdrop blur, so each part of that model is expressed
-// with the properties St really supports.
+// The vocabulary is a square liquid-glass slab over a skeuomorphic surface:
+// one glowing orange accent for anything focused, active or measured, a
+// monochrome body of near-blacks and off-whites, and silver rims for every
+// edge that catches light. Corners are square everywhere - the radius is part
+// of the material, not a setting - and depth is carried by four separate
+// surfaces instead of one: the desktop casts the card's shadow, the card
+// carries the tint, the backdrop paints the grid, noise and rim light, and the
+// controls sit above both.
 //
-// Two St constraints shape this file:
+// Three St facts shape every value below:
 //
-// 1. St honours exactly one box-shadow per declaration; extra layers are
-//    dropped with a warning. Depth is therefore layered across the card, its
-//    toolbar and each sub-surface instead of stacked on a single actor.
-// 2. Gradients are the only blur-free way to fake a soft highlight, so the
-//    sheen, the rim and the refraction edge are all gradient or border work.
+// 1. St honours exactly one box-shadow per declaration and warns about the
+//    rest, so a surface spends its single shadow on the cue that matters most
+//    for it: cast shadow, specular edge, engraved groove or focus ring. Where
+//    the design calls for two inset cues (a recess is dark at the top left and
+//    lit at the bottom right) the second one is a border, not a shadow.
+// 2. St has no backdrop sampling: there is no backdrop-filter, no filter and
+//    no way for an actor to read what is painted behind it. Blur is therefore
+//    implied rather than performed - a dark tint, a vertical sheen, a noise
+//    layer and a bright 1px rim together read as thick glass.
+// 3. Inline styles beat the stylesheet, so the card's tint and focus ring are
+//    produced here while the controls stay fully CSS driven.
 
 const WHITE = {red: 255, green: 255, blue: 255};
 const BLACK = {red: 0, green: 0, blue: 0};
-const TINT = {red: 18, green: 28, blue: 46};
+
+/** Cool near-black the slab is tinted with. */
+const TINT = {red: 14, green: 18, blue: 26};
+
+/** The one accent: a glowing orange used for focus, active and metrics. */
+export const ACCENT = '#FF8A1F';
+/** Lighter and darker steps of the accent, for bevels and grooves. */
+export const ACCENT_LIT = '#FFC078';
+export const ACCENT_DEEP = '#A94A05';
+
+/** Silver rims, borders and the neutral half of the palette. */
+export const SILVER_RIM = 'rgba(255, 255, 255, 0.12)';
+export const SILVER_EDGE = 'rgba(255, 255, 255, 0.20)';
+export const INK = '#F2F5F8';
+export const MUTED = '#A8B3C0';
+
+/** Grid and noise opacities, kept as constants so they stay subtle. */
+export const GRID_ALPHA = 0.030;
+export const NOISE_ALPHA = 0.030;
+export const GRID_PITCH = 22;
+
+/** The LED palette: one colour per connection state. */
+export const LED_COLORS = {
+    CONNECTED: '#2FE08A',
+    INITIALIZING: '#FFC24D',
+    PAUSED: '#FFC24D',
+    DISCONNECTED: '#FF6B5A',
+    ERROR: '#FF6B5A',
+    DISABLED: '#8A93A0',
+};
 
 /** Shared motion vocabulary, in milliseconds. */
 export const MOTION = {
@@ -68,79 +106,110 @@ export function darken(color, amount) {
 /**
  * The main glass slab.
  *
- * `alpha` is the user's surface opacity. The vertical gradient is derived
- * from it so the slab stays top-lit at every opacity setting, and the single
- * box-shadow carries the cast shadow that lifts the card off the desktop.
+ * `alpha` is the user's surface opacity. The vertical gradient is derived from
+ * it so the slab stays top-lit at every opacity setting, and the single
+ * box-shadow carries the cast shadow that floats the card above the desktop.
  *
  * St gives an actor's inline style priority over the theme stylesheet, so the
  * keyboard focus ring is produced here as well: the cast shadow is swapped for
- * the ring while the card holds focus, which also keeps the ring outside the
- * border box and therefore free of any layout shift.
+ * a square orange ring while the card holds focus.
  */
-export function cardSurfaceStyle({radius, fontSize, alpha, focused = false}) {
-    const top = lighten(TINT, 0.16);
-    const bottom = darken(TINT, 0.44);
-    const rim = focused ? 'rgba(126, 226, 255, 0.95)' : 'rgba(206, 228, 255, 0.34)';
+export function cardSurfaceStyle({fontSize, alpha, focused = false}) {
+    const top = lighten(TINT, 0.20);
+    const bottom = darken(TINT, 0.42);
+    const rim = focused ? rgba(hexToRgb(ACCENT), 0.90) : SILVER_RIM;
     const shadow = focused
-        ? 'box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.60);'
-        : 'box-shadow: 0 18px 42px rgba(3, 8, 18, 0.58);';
+        ? 'box-shadow: 0 0 0 2px rgba(255, 138, 31, 0.55);'
+        : 'box-shadow: 0 20px 40px rgba(0, 0, 0, 0.40);';
     return [
         `background-color: ${rgba(TINT, alpha)};`,
         'background-gradient-direction: vertical;',
-        `background-gradient-start: ${rgba(top, clamp(alpha * 0.94, 0, 1))};`,
+        `background-gradient-start: ${rgba(top, clamp(alpha * 0.96, 0, 1))};`,
         `background-gradient-end: ${rgba(bottom, clamp(alpha * 1.04, 0, 1))};`,
         `border: 1px solid ${rim};`,
-        `border-radius: ${radius}px;`,
+        'border-radius: 0;',
         `font-size: ${fontSize}px;`,
         shadow,
     ].join(' ');
 }
 
 /**
- * The sheen on the title strip: the top edge of the glass catching the key
- * light. It carries the inner specular highlight the card itself cannot,
- * because the card already spends its single shadow on the cast shadow.
+ * A recessed metric well: the glass has been pressed in and the light now
+ * falls across its upper left wall.
  *
- * The strip also gets a dark base under the sheen. Without it the sheen and a
- * bright wallpaper together lift the strip above the card's own tint, and the
- * brand label measured 4.16:1 against it at the minimum transparency, short
- * of the 4.5:1 this text size needs. The base holds the strip dark at every
- * transparency setting.
+ * The design asks for two inset shadows, which St cannot draw, so the dark
+ * press is the one shadow and the lit lower edge is a border. Together they
+ * read as a cavity rather than a tile.
  */
-export function toolbarSpecularStyle({radius}) {
+export function wellStyle() {
     return [
-        'background-color: rgba(8, 14, 24, 0.38);',
         'background-gradient-direction: vertical;',
-        'background-gradient-start: rgba(255, 255, 255, 0.14);',
-        'background-gradient-end: rgba(255, 255, 255, 0.0);',
-        `border-radius: ${radius}px ${radius}px 0 0;`,
-        'box-shadow: inset 0 1px 0 rgba(214, 238, 255, 0.44);',
+        'background-gradient-start: rgba(0, 2, 6, 0.46);',
+        'background-gradient-end: rgba(10, 16, 26, 0.30);',
+        'border: 1px solid rgba(0, 0, 0, 0.42);',
+        'border-bottom-color: rgba(255, 255, 255, 0.13);',
+        'border-right-color: rgba(255, 255, 255, 0.07);',
+        'border-radius: 0;',
+        'box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.62);',
+    ].join(' ');
+}
+
+/**
+ * The floating tray the bottom controls sit on. It is the top layer of the
+ * stack, so it spends its shadow on a wide cast shadow rather than on an
+ * inset edge.
+ */
+export function floatingTrayStyle() {
+    return [
+        'background-gradient-direction: vertical;',
+        'background-gradient-start: rgba(34, 42, 54, 0.92);',
+        'background-gradient-end: rgba(12, 16, 23, 0.94);',
+        'border: 1px solid rgba(255, 255, 255, 0.16);',
+        'border-bottom-color: rgba(0, 0, 0, 0.55);',
+        'border-radius: 0;',
+        'box-shadow: 0 16px 28px rgba(0, 0, 0, 0.62);',
     ].join(' ');
 }
 
 /**
  * The liquid inside a meter: a lit bead of the user's accent colour with a
- * soft bloom. The bloom uses the one available shadow slot.
+ * bevel, a specular top edge and a small shadow it casts onto the groove.
+ * The bloom uses the one available shadow slot.
  */
 export function meterFillStyle({accent}) {
     const color = hexToRgb(accent);
-    const lit = lighten(color, 0.42);
-    const deep = darken(color, 0.28);
+    const lit = lighten(color, 0.45);
+    const deep = darken(color, 0.30);
     return [
         'background-gradient-direction: vertical;',
         `background-gradient-start: ${rgba(lit, 0.98)};`,
         `background-gradient-end: ${rgba(deep, 0.95)};`,
-        `box-shadow: 0 0 12px ${rgba(color, 0.5)};`,
+        `border-top: 1px solid ${rgba(lighten(color, 0.72), 0.85)};`,
+        `border-bottom: 1px solid ${rgba(deep, 0.90)};`,
+        'border-radius: 0;',
+        `box-shadow: 0 0 10px ${rgba(color, 0.55)};`,
     ].join(' ');
 }
 
-/** A recessed groove for the meter track, matching the current accent. */
+/** A recessed groove for the meter track, square and pressed into the well. */
 export function meterTrackStyle() {
     return [
         'background-gradient-direction: vertical;',
-        'background-gradient-start: rgba(2, 6, 16, 0.62);',
-        'background-gradient-end: rgba(2, 6, 16, 0.34);',
-        'border: 1px solid rgba(210, 232, 255, 0.10);',
-        'box-shadow: inset 0 2px 4px rgba(2, 6, 16, 0.58);',
+        'background-gradient-start: rgba(0, 1, 4, 0.72);',
+        'background-gradient-end: rgba(6, 10, 18, 0.48);',
+        'border: 1px solid rgba(0, 0, 0, 0.50);',
+        'border-bottom-color: rgba(255, 255, 255, 0.10);',
+        'border-radius: 0;',
+        'box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.66);',
     ].join(' ');
+}
+
+/** The LED colour for a connection state, as an RGB object. */
+export function ledColor(state) {
+    return hexToRgb(LED_COLORS[state] ?? LED_COLORS.INITIALIZING);
+}
+
+/** Normalise any `#RRGGBB` (or anything else) to a usable accent. */
+export function safeAccent(hex) {
+    return /^#[0-9A-Fa-f]{6}$/.test(hex ?? '') ? hex.toUpperCase() : ACCENT;
 }

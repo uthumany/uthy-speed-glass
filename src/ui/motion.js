@@ -15,6 +15,13 @@ import {MOTION} from './glassMaterial.js';
 const PRESS_SCALE = 0.94;
 const LIFT_SCALE = 1.06;
 
+// Raised controls travel as well as squash: the pointer lifts them two pixels
+// towards the light, a press drops them one pixel into the tray.
+const RAISED_LIFT = -2;
+const RAISED_DROP = 1;
+const RAISED_HOVER_SCALE = 1.02;
+const RAISED_PRESS_SCALE = 0.97;
+
 export class Motion {
     constructor(reducedMotion = false) {
         this._reducedMotion = Boolean(reducedMotion);
@@ -55,6 +62,27 @@ export class Motion {
     /** Button released: stretch back with a spring overshoot. */
     release(actor) {
         this._scale(actor, 1, MOTION.release, Clutter.AnimationMode.EASE_OUT_BACK);
+    }
+
+    /**
+     * A raised control under the pointer: it leaves the tray by two pixels and
+     * grows a fraction. Only translation and scale are animated, so the layout
+     * around it never moves.
+     */
+    raiseControl(actor) {
+        this._transform(actor, RAISED_LIFT, RAISED_HOVER_SCALE, MOTION.hover,
+            Clutter.AnimationMode.EASE_OUT_CUBIC);
+    }
+
+    /** A raised control being pressed: it drops into its own shadow. */
+    pressControl(actor) {
+        this._transform(actor, RAISED_DROP, RAISED_PRESS_SCALE, MOTION.press,
+            Clutter.AnimationMode.EASE_OUT_CUBIC);
+    }
+
+    /** A raised control at rest again. */
+    settleControl(actor) {
+        this._transform(actor, 0, 1, MOTION.release, Clutter.AnimationMode.EASE_OUT_BACK);
     }
 
     /**
@@ -148,6 +176,24 @@ export class Motion {
             return;
         }
         actor.ease({
+            scale_x: scale,
+            scale_y: scale,
+            duration,
+            mode,
+        });
+    }
+
+    /** Shared translation plus scale animation for the raised controls. */
+    _transform(actor, translationY, scale, duration, mode) {
+        if (this._destroyed || !actor)
+            return;
+        if (this._reducedMotion) {
+            actor.translation_y = 0;
+            actor.set_scale(1, 1);
+            return;
+        }
+        actor.ease({
+            translation_y: translationY,
             scale_x: scale,
             scale_y: scale,
             duration,

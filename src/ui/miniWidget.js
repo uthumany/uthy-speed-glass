@@ -2,6 +2,7 @@ import St from 'gi://St';
 import {createHistoryGraph} from './historyGraph.js';
 import {createStatusLine} from './ledIndicator.js';
 import {formatSpeed} from '../network/speedCalculator.js';
+import {createEngravedBand, createEngravedText} from './engravedText.js';
 
 function makeCell({label, iconName, arrow, color, speed, motion, icons = null}) {
     const cell = new St.BoxLayout({vertical: true, style_class: 'uthy-mini-cell', x_expand: true});
@@ -13,14 +14,16 @@ function makeCell({label, iconName, arrow, color, speed, motion, icons = null}) 
         : new St.Label({text: arrow, style_class: 'uthy-mini-arrow'});
     if (!icons)
         symbol.set_style(`color: ${color};`);
-    const value = new St.Label({text: formatSpeed(speed), style_class: 'uthy-mini-speed', x_expand: true});
-    value.clutter_text.ellipsize = 3;
-    const caption = new St.Label({text: label, style_class: 'uthy-mini-caption'});
+    const value = createEngravedText({text: formatSpeed(speed), role: 'mini-value',
+        xExpand: true, ellipsize: 3});
+    // The caption is punched into a metal band, so it reads as recessed into
+    // the glass rather than printed on top of it.
+    const caption = createEngravedBand({text: label, role: 'caption'});
     top.add_child(symbol);
-    top.add_child(value);
+    top.add_child(value.actor);
     cell.add_child(top);
-    cell.add_child(caption);
-    return {cell, value, motion, lastReading: null};
+    cell.add_child(caption.actor);
+    return {cell, value, caption, motion, lastReading: null};
 }
 
 export function createMiniWidget(data, options, {compact = false} = {}) {
@@ -52,9 +55,9 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
     const syncCell = (cell, next) => {
         const reading = formatSpeed(next);
         if (cell.lastReading !== null && cell.lastReading !== reading && cell.motion)
-            cell.motion.pulse(cell.value, 1.04, 170);
+            cell.motion.pulse(cell.value.actor, 1.04, 170);
         cell.lastReading = reading;
-        cell.value.text = reading;
+        cell.value.setText(reading);
     };
 
     return {
@@ -62,8 +65,8 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
         update(next) {
             syncCell(download, next.downloadMBps);
             syncCell(upload, next.uploadMBps);
-            download.value.accessible_name = `Download: ${formatSpeed(next.downloadMBps)}`;
-            upload.value.accessible_name = `Upload: ${formatSpeed(next.uploadMBps)}`;
+            download.value.setAccessibleName(`Download: ${formatSpeed(next.downloadMBps)}`);
+            upload.value.setAccessibleName(`Upload: ${formatSpeed(next.uploadMBps)}`);
             status.update(next);
             if (graph)
                 graph.update(next.history);

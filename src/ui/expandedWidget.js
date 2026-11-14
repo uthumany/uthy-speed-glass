@@ -4,12 +4,13 @@ import {formatBytes} from '../network/statistics.js';
 import {createHistoryGraph} from './historyGraph.js';
 import {createStatusLine} from './ledIndicator.js';
 import {createSpeedGauge, updateSpeedGauge} from './speedGauge.js';
+import {createEngravedBand, createEngravedText} from './engravedText.js';
 
 function createStat(title, initial) {
     const item = new St.BoxLayout({vertical: true, style_class: 'uthy-stat-item', x_expand: true});
-    item.add_child(new St.Label({text: title, style_class: 'uthy-stat-title'}));
-    const value = new St.Label({text: initial, style_class: 'uthy-stat-value'});
-    item.add_child(value);
+    item.add_child(createEngravedBand({text: title, role: 'stat-title'}).actor);
+    const value = createEngravedText({text: initial, role: 'stat-value'});
+    item.add_child(value.actor);
     return {actor: item, value};
 }
 
@@ -65,10 +66,10 @@ export function createExpandedWidget(data, options) {
                 options.motion, recentDownload);
             updateSpeedGauge(uploadGauge, next.uploadMBps, stats.uploadPeakMBps,
                 options.motion, recentUpload);
-            rx.value.text = formatBytes(stats.downloadTotalBytes);
-            tx.value.text = formatBytes(stats.uploadTotalBytes);
-            downAverage.value.text = formatSpeed(stats.downloadAverageMBps);
-            upAverage.value.text = formatSpeed(stats.uploadAverageMBps);
+            rx.value.setText(formatBytes(stats.downloadTotalBytes));
+            tx.value.setText(formatBytes(stats.uploadTotalBytes));
+            downAverage.value.setText(formatSpeed(stats.downloadAverageMBps));
+            upAverage.value.setText(formatSpeed(stats.uploadAverageMBps));
             if (graph)
                 graph.update(next.history);
             statusLine.update(next);

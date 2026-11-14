@@ -15,6 +15,8 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
 
+import {createEngravedText} from './engravedText.js';
+
 const THEME_FALLBACKS = {
     'brand': 'network-transmit-receive-symbolic',
     'notification': 'preferences-system-notifications-symbolic',
@@ -92,9 +94,10 @@ export class IconFactory {
         // press into their own shadow; the bare toolbar icons only squash, so
         // the 3D artwork never slides around inside the title strip.
         const raised = styleClass === 'uthy-control-button';
-        const child = hasLabel
-            ? new St.Label({text: label, style_class: 'uthy-control-label'})
-            : this.createIcon({iconName, iconSize});
+        // A labelled control is stamped into its plate: the same engraved pair
+        // the rest of the interface uses, so the type never looks flat.
+        const engraved = hasLabel ? createEngravedText({text: label, role: 'control'}) : null;
+        const child = engraved ? engraved.actor : this.createIcon({iconName, iconSize});
         const button = new St.Button({
             style_class: styleClass,
             can_focus: true,
@@ -107,7 +110,7 @@ export class IconFactory {
             button,
             icon: hasLabel ? null : child,
             iconName: hasLabel ? null : iconName,
-            label: hasLabel ? child : null,
+            label: engraved,
             labelText: hasLabel ? label : null,
         };
         this._records.add(record);
@@ -171,7 +174,7 @@ export class IconFactory {
     setLabel(record, text) {
         if (record?.label && record.labelText !== text) {
             record.labelText = text;
-            record.label.text = text;
+            record.label.setText(text);
         }
     }
 

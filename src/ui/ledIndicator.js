@@ -14,6 +14,7 @@ import Clutter from 'gi://Clutter';
 import St from 'gi://St';
 
 import {darken, ledColor, lighten, rgba} from './glassMaterial.js';
+import {createEngravedText} from './engravedText.js';
 
 export const LED_STATES = {
     CONNECTED: 'Connected',
@@ -146,10 +147,10 @@ function fallbackLabel(state) {
 export function createStatusLine({motion = null, styleClass = 'uthy-status-line', ping = false} = {}) {
     const row = new St.BoxLayout({style_class: styleClass, x_expand: true});
     const led = createLedIndicator({motion});
-    const label = new St.Label({text: 'initialising', style_class: 'uthy-status-text', x_expand: true});
-    label.clutter_text.ellipsize = 3;
+    const label = createEngravedText({text: 'initialising', role: 'status', xExpand: true,
+        ellipsize: 3});
     row.add_child(led.actor);
-    row.add_child(label);
+    row.add_child(label.actor);
 
     return {
         actor: row,
@@ -161,10 +162,10 @@ export function createStatusLine({motion = null, styleClass = 'uthy-status-line'
                 text += ` · ping ${data.pingMs.toFixed(0)} ms`;
             else if (ping && data.pingMessage)
                 text += ` · ${data.pingMessage}`;
-            label.text = text;
+            label.setText(text);
             const description = `${LED_STATES[state]}${data.interfaceName ? ` on ${data.interfaceName}` : ''}`;
             row.accessible_name = description;
-            label.accessible_name = description;
+            label.setAccessibleName(description);
         },
     };
 }

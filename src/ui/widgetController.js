@@ -8,6 +8,8 @@ import {createGlassBackdrop} from './glassBackdrop.js';
 import {IconFactory} from './iconFactory.js';
 import {Motion} from './motion.js';
 import {cardSurfaceStyle, floatingTrayStyle} from './glassMaterial.js';
+import {createEngravedText} from './engravedText.js';
+import {createMetalPlate} from './metalPlate.js';
 
 const MODE_SIZES = {
     mini: {width: 280, height: 136},
@@ -66,20 +68,31 @@ export class WidgetController {
         });
         this.actor.add_child(this._stack);
         this._toolbar = new St.BoxLayout({style_class: 'uthy-toolbar', x_expand: true});
-        this._dragHandle = new St.BoxLayout({
+        // The name plate is a painted recess: brushed metal, a punched
+        // impression and a glass sheen are drawn by metalPlate.js, and the
+        // lettering is pressed into it, so the title strip reads as a stamped
+        // metal plate rather than a flat strip.
+        this._dragHandle = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
             style_class: 'uthy-drag-handle',
             reactive: true,
+            track_hover: true,
             can_focus: true,
             x_expand: true,
         });
-        // The title strip is itself the recess: the drag handle carries the
-        // sunken material, so the name reads as pressed into the card.
+        this._brandPlate = createMetalPlate({
+            styleClass: 'uthy-brand-plate',
+            tone: 'brand',
+            recessOptions: {inset: 1, shadow: 0.85, lip: 0.26, depth: 0.75},
+        });
+        const brandRow = new St.BoxLayout({style_class: 'uthy-brand-row', x_expand: true});
         this._brandIcon = this._icons.createIcon({iconName: 'brand', iconSize: 16,
             styleClass: 'uthy-brand-icon'});
-        this._dragHandle.add_child(this._brandIcon);
-        this._brandLabel = new St.Label({text: 'UthyPing', style_class: 'uthy-brand',
-            x_expand: true});
-        this._dragHandle.add_child(this._brandLabel);
+        this._brandLabel = createEngravedText({text: 'UthyPing', role: 'brand', xExpand: true});
+        brandRow.add_child(this._brandIcon);
+        brandRow.add_child(this._brandLabel.actor);
+        this._dragHandle.add_child(this._brandPlate);
+        this._dragHandle.add_child(brandRow);
         this._toolbar.add_child(this._dragHandle);
 
         this._pin = this._icons.createButton({

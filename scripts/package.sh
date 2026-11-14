@@ -56,8 +56,9 @@ missing = required - names
 if missing:
     raise SystemExit(f'Package missing required paths: {sorted(missing)}')
 # The bundled 3D control icons are loaded at runtime, so the ZIP must carry them.
-if not any(name.startswith('icons/') and name.endswith('.svg') for name in names):
-    raise SystemExit('Package is missing the bundled icons/ assets')
+prepared = {name for name in names if name.startswith('icons/') and name.endswith('.png')}
+if len(prepared) < 14:
+    raise SystemExit(f'Package is missing bundled icons/ assets: found {len(prepared)} of 14')
 if any(name.startswith('/') or '..' in pathlib.PurePosixPath(name).parts for name in names):
     raise SystemExit('Package contains unsafe paths')
 print(f'PASS: package layout ({len(names)} files)')

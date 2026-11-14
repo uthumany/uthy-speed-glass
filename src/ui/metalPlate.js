@@ -297,3 +297,263 @@ export function createSlotPlate({styleClass = 'uthy-slot-plate', options = {}} =
         paint: (cr, width, height) => paintMachinedSlot(cr, width, height, options),
     });
 }
+
+/**
+ * The same machined slot, glazed: a recessed window cut into the frame with a
+ * reflection across its top half and a faint diagonal sheen, so what is drawn
+ * behind it reads as being under glass.
+ */
+export function paintGlassWindow(cr, width, height, options = {}) {
+    const {
+        inset = 3,
+        bevel = 2,
+        depth = 5,
+        glint = 0.5,
+        frame = ALUMINIUM,
+        cavityTop = [5, 8, 13],
+        cavityBottom = [13, 17, 24],
+    } = options;
+    paintMachinedSlot(cr, width, height, {inset, bevel, depth, glint, frame, cavityTop, cavityBottom});
+
+    const x = inset;
+    const y = inset;
+    const w = width - inset * 2;
+    const h = height - inset * 2;
+    if (w <= 6 || h <= 6)
+        return;
+
+    paintGlassReflection(cr, x, y, w, h);
+}
+
+/** The reflection of a glazed surface: a lit top half and a diagonal sheen. */
+export function paintGlassReflection(cr, x, y, width, height) {
+    const reflection = new cairo.LinearGradient(x, y, x, y + height * 0.58);
+    reflection.addColorStopRGBA(0, 1, 1, 1, 0.11);
+    reflection.addColorStopRGBA(0.55, 1, 1, 1, 0.035);
+    reflection.addColorStopRGBA(1, 1, 1, 1, 0);
+    cr.setSource(reflection);
+    cr.rectangle(x, y, width, height);
+    cr.fill();
+
+    const sheen = new cairo.LinearGradient(x, y + height, x + width * 0.7, y);
+    sheen.addColorStopRGBA(0, 1, 1, 1, 0);
+    sheen.addColorStopRGBA(0.5, 1, 1, 1, 0.04);
+    sheen.addColorStopRGBA(1, 1, 1, 1, 0);
+    cr.setSource(sheen);
+    cr.rectangle(x, y, width, height);
+    cr.fill();
+}
+
+/**
+ * A glazed overlay: the reflection alone, as a layer above whatever is drawn
+ * behind it, so the traffic line sits under glass instead of on top of it.
+ */
+export function createGlassOverlay({styleClass = 'uthy-glass-overlay', inset = 3} = {}) {
+    return createPaintedArea({
+        styleClass,
+        paint: (cr, width, height) => {
+            const w = width - inset * 2;
+            const h = height - inset * 2;
+            if (w <= 6 || h <= 6)
+                return;
+            paintGlassReflection(cr, inset, inset, w, h);
+        },
+    });
+}
+
+/** Brushed steel for a control cap: lighter than the panel it sits on. */
+export const CAP_STEEL = {top: [154, 162, 174], bottom: [64, 71, 82], grain: 0.085, sweep: 0.055};
+
+/**
+ * A physical push button.
+ *
+ * Raised, it is a square metallic cap with a brushed texture, a beveled edge
+ * lit on the top and left, a glossy reflection across its top half, and a cast
+ * shadow underneath so it sits proud of the panel. Pressed, the cap is gone and
+ * the button is a socket: the inner shadows flip, the floor darkens away from
+ * the light, the far wall catches it, and the gloss dims. Both states keep the
+ * same one-pixel outline, so a press never moves the surrounding layout.
+ */
+export function paintPushButtonCap(cr, width, height, {pressed = false, hover = false, cap = CAP_STEEL} = {}) {
+    const margin = 1;
+    const shadowRoom = 3;
+    const x = margin;
+    const y = margin;
+    const w = width - margin * 2;
+    const h = height - margin * 2 - shadowRoom;
+    if (w <= 6 || h <= 6)
+        return;
+
+    if (pressed) {
+        const floor = new cairo.LinearGradient(0, y, 0, y + h);
+        floor.addColorStopRGBA(0, 0, 0, 0, 0.72);
+        floor.addColorStopRGBA(1, 0.09, 0.11, 0.14, 0.5);
+        cr.setSource(floor);
+        cr.rectangle(x, y, w, h);
+        cr.fill();
+
+        // The inner shadow now falls from the top and left, because the cap has
+        // sunk below the surface the light reaches.
+        const shade = new cairo.LinearGradient(x, y, x, y + Math.min(h, 6));
+        shade.addColorStopRGBA(0, 0, 0, 0, 0.8);
+        shade.addColorStopRGBA(1, 0, 0, 0, 0);
+        cr.setSource(shade);
+        cr.rectangle(x, y, w, h);
+        cr.fill();
+
+        const side = new cairo.LinearGradient(x, y, x + Math.min(w, 5), y);
+        side.addColorStopRGBA(0, 0, 0, 0, 0.6);
+        side.addColorStopRGBA(1, 0, 0, 0, 0);
+        cr.setSource(side);
+        cr.rectangle(x, y, w, h);
+        cr.fill();
+
+        cr.setLineWidth(1);
+        cr.setSourceRGBA(0, 0, 0, 0.7);
+        stroke(cr, x, y + 0.5, x + w, y + 0.5);
+        stroke(cr, x + 0.5, y, x + 0.5, y + h);
+        cr.setSourceRGBA(1, 1, 1, 0.16);
+        stroke(cr, x, y + h - 0.5, x + w, y + h - 0.5);
+        stroke(cr, x + w - 0.5, y, x + w - 0.5, y + h);
+
+        // The gloss is still there, just dimmed.
+        const gloss = new cairo.LinearGradient(0, y, 0, y + h * 0.5);
+        gloss.addColorStopRGBA(0, 1, 1, 1, 0.05);
+        gloss.addColorStopRGBA(1, 1, 1, 1, 0);
+        cr.setSource(gloss);
+        cr.rectangle(x, y, w, h * 0.5);
+        cr.fill();
+        return;
+    }
+
+    // The cast shadow, in three layers, so the cap sits proud of the panel.
+    for (let step = 0; step < shadowRoom; step++) {
+        cr.setSourceRGBA(0, 0, 0, 0.34 * (1 - step / shadowRoom));
+        cr.rectangle(x + step, y + h + step, w - step * 2, 1);
+        cr.fill();
+    }
+
+    cr.save();
+    cr.translate(x, y);
+    paintBrushedMetal(cr, w, h, cap);
+    cr.restore();
+
+    cr.setLineWidth(1);
+    cr.setSourceRGBA(0, 0, 0, 0.68);
+    cr.rectangle(x + 0.5, y + 0.5, w - 1, h - 1);
+    cr.stroke();
+
+    cr.setSourceRGBA(1, 1, 1, hover ? 0.55 : 0.42);
+    stroke(cr, x + 1.5, y + 1.5, x + w - 1.5, y + 1.5);
+    stroke(cr, x + 1.5, y + 1.5, x + 1.5, y + h - 1.5);
+    cr.setSourceRGBA(0, 0, 0, hover ? 0.6 : 0.5);
+    stroke(cr, x + 1.5, y + h - 1.5, x + w - 1.5, y + h - 1.5);
+    stroke(cr, x + w - 1.5, y + 1.5, x + w - 1.5, y + h - 1.5);
+
+    const gloss = new cairo.LinearGradient(0, y + 1, 0, y + h * 0.52);
+    gloss.addColorStopRGBA(0, 1, 1, 1, hover ? 0.26 : 0.20);
+    gloss.addColorStopRGBA(0.6, 1, 1, 1, 0.06);
+    gloss.addColorStopRGBA(1, 1, 1, 1, 0);
+    cr.setSource(gloss);
+    cr.rectangle(x + 1, y + 1, w - 2, h * 0.52);
+    cr.fill();
+}
+
+/**
+ * The impression a glyph is pressed into: a small recess with a shadow above
+ * and to the left of the mark and a lit edge below and to the right, plus an
+ * optional bloom when the glyph carries light of its own.
+ */
+export function paintGlyphInlay(cr, width, height, {bloom = null, radius = 0} = {}) {
+    if (width <= 6 || height <= 6)
+        return;
+    const x = 1;
+    const y = 1;
+    const w = width - 2;
+    const h = height - 2;
+
+    const floor = new cairo.LinearGradient(0, y, 0, y + h);
+    floor.addColorStopRGBA(0, 0, 0, 0, 0.26);
+    floor.addColorStopRGBA(1, 0.10, 0.12, 0.16, 0.14);
+    cr.setSource(floor);
+    cr.rectangle(x, y, w, h);
+    cr.fill();
+
+    const shade = new cairo.LinearGradient(x, y, x, y + Math.min(h, 4));
+    shade.addColorStopRGBA(0, 0, 0, 0, 0.42);
+    shade.addColorStopRGBA(1, 0, 0, 0, 0);
+    cr.setSource(shade);
+    cr.rectangle(x, y, w, h);
+    cr.fill();
+
+    if (bloom) {
+        const centreX = width / 2;
+        const centreY = height / 2;
+        const glow = new cairo.RadialGradient(centreX, centreY, 0, centreX, centreY, Math.max(width, height) * 0.7);
+        glow.addColorStopRGBA(0, bloom.red / 255, bloom.green / 255, bloom.blue / 255, 0.42);
+        glow.addColorStopRGBA(1, bloom.red / 255, bloom.green / 255, bloom.blue / 255, 0);
+        cr.setSource(glow);
+        cr.rectangle(x, y, w, h);
+        cr.fill();
+    }
+
+    cr.setLineWidth(1);
+    cr.setSourceRGBA(0, 0, 0, 0.6);
+    stroke(cr, x + 0.5, y + 0.5, x + w - 0.5, y + 0.5);
+    stroke(cr, x + 0.5, y + 0.5, x + 0.5, y + h - 0.5);
+    cr.setSourceRGBA(1, 1, 1, 0.20);
+    stroke(cr, x + 0.5, y + h - 0.5, x + w - 0.5, y + h - 0.5);
+    stroke(cr, x + w - 0.5, y + 0.5, x + w - 0.5, y + h - 0.5);
+    void radius;
+}
+
+/**
+ * A soft impression with no frame at all: it darkens towards its top edge and
+ * fades out at the sides, so the surface reads as pressed in without any line
+ * being drawn around it. Used behind the title, where a framed plate would read
+ * as a box around the header.
+ */
+export function paintSoftImpression(cr, width, height, {depth = 0.34, fade = 0.22} = {}) {
+    if (width <= 4 || height <= 4)
+        return;
+
+    const vertical = new cairo.LinearGradient(0, 0, 0, height);
+    vertical.addColorStopRGBA(0, 0, 0, 0, depth);
+    vertical.addColorStopRGBA(0.7, 0, 0, 0, depth * 0.45);
+    vertical.addColorStopRGBA(1, 0, 0, 0, depth * 0.15);
+    cr.setSource(vertical);
+    cr.rectangle(0, 0, width, height);
+    cr.fill();
+
+    // A single lit line along the bottom wall, so the impression has one edge.
+    const lit = new cairo.LinearGradient(0, 0, width, 0);
+    lit.addColorStopRGBA(0, 1, 1, 1, 0);
+    lit.addColorStopRGBA(0.35, 1, 1, 1, 0.14);
+    lit.addColorStopRGBA(0.65, 1, 1, 1, 0.14);
+    lit.addColorStopRGBA(1, 1, 1, 1, 0);
+    cr.setSource(lit);
+    cr.rectangle(0, height - 1, width, 1);
+    cr.fill();
+
+    // Both ends are then erased rather than darkened: DEST_OUT removes what is
+    // already there in proportion to the alpha it is given, which is the only
+    // way to fade a painted surface out without drawing anything over it.
+    const span = Math.max(6, Math.min(width * 0.5, width * fade));
+    cr.setOperator(9); // DEST_OUT
+    const mask = new cairo.LinearGradient(0, 0, width, 0);
+    mask.addColorStopRGBA(0, 1, 1, 1, 1);
+    mask.addColorStopRGBA(span / width, 1, 1, 1, 0);
+    mask.addColorStopRGBA(1 - span / width, 1, 1, 1, 0);
+    mask.addColorStopRGBA(1, 1, 1, 1, 1);
+    cr.setSource(mask);
+    cr.rectangle(0, 0, width, height);
+    cr.fill();
+    cr.setOperator(2); // OVER
+}
+
+export function createImpressionPlate({styleClass = 'uthy-impression', options = {}} = {}) {
+    return createPaintedArea({
+        styleClass,
+        paint: (cr, width, height) => paintSoftImpression(cr, width, height, options),
+    });
+}

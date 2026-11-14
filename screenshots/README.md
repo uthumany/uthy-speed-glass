@@ -9,6 +9,7 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `uthy-glass-mini.png` | Mini layout on the desktop |
 | `uthy-glass-compact.png` | Compact layout with the taller chart |
 | `zoom-expanded.png` | Enlarged crop of the expanded card for reviewing the material |
+| `typography-specimen.png` | Every engraved type role magnified, so the press depth can be judged: the letterpressed name, the reading, a caption band, a statistic band and value, the interface name and a control label |
 | `zoom-mini.png` | Enlarged crop of the mini card |
 | `zoom-title-strip.png` | The `UthyPing` name plate: square recess, inset press, dark upper lip, lit lower lip and engraved lettering |
 | `zoom-tray-expanded.png`, `zoom-tray-hover.png`, `zoom-tray-pressed.png` | A tray control at rest, lifted two pixels on hover, and pressed into its own inset shadow |

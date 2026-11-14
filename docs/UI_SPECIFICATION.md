@@ -56,7 +56,50 @@ Inline styles win over the stylesheet in St, so the card's tint, cast shadow and
 
 ## Typography
 
-Every numeric readout carries `font-feature-settings: "tnum"`, so a changing digit never reflows the label beside it: the mini rates, the gauge values and the statistic values all use tabular figures. Secondary labels — `DOWNLOAD`, `UPLOAD`, `SESSION RX`, `Peak` — are engraved: a dim `#9DABB9` with a single light `text-shadow` below the glyph, so they read as cut into the glass rather than printed on it.
+Every label is *pressed into* the surface rather than printed on it. A debossed
+glyph needs two light cues, and St honours exactly one `text-shadow` per
+declaration, so each piece of text is drawn as a pair of stacked copies inside
+a `Clutter.BinLayout` (`src/ui/engravedText.js`):
+
+| Copy | What it draws | Depth |
+|---|---|---|
+| Shadow | The dark inner shadow the near wall of the impression casts over the glyph, offset up by the role's depth | 1 px for labels, 2 px for the 22 px reading |
+| Ink | The glyph itself, in a metal tone, with one sharp lit line along its lower edge — the far wall of the impression catching light | 0 px, `text-shadow: 0 1px 0` |
+
+Both copies carry the same text and the same font, so the pair reads as one
+piece of type. The shadow copy is marked with a decorative accessible role so
+assistive technology sees a single label; where the toolkit has no such role the
+pair is exposed twice, which is recorded in
+[docs/ACCESSIBILITY.md](ACCESSIBILITY.md).
+
+Captions are additionally **punched into a brushed-metal band**
+(`src/ui/metalPlate.js`): a vertical metal gradient, deterministic grain, a
+diagonal specular sweep, a dark inner shadow cast from the top and left, a
+sharp lit line along the far (lower) wall, a lit outer lip above and a dark one
+below, and a clear glass sheen over the whole plate. The band hugs its text and
+grows with the font-size preference.
+
+Roles and the type scale:
+
+| Role | Where it appears | Size | Depth | Treatment |
+|---|---|---|---|---|
+| `brand` | `UthyPing` in the title strip | 10 px, 1.1 px tracking | 1 px | Letterpress into the brushed name plate |
+| `caption` | `DOWNLOAD`, `UPLOAD` | 9 px, 0.9 px tracking | 1 px | Punched band |
+| `stat-title` | `SESSION RX`, `SESSION TX`, `AVG ↓`, `AVG ↑` | 9 px, 0.9 px tracking | 1 px | Punched band |
+| `value` | the 22 px reading | 22 px bold | 2 px | Pressed into the recessed well |
+| `mini-value` | the mini and compact readings | 15 px bold | 1 px | Pressed into the slab |
+| `stat-value` | session totals and averages | 11 px bold | 1 px | Engraved on the slab |
+| `peak` | `Peak 3.5 MB/s` | 10 px | 1 px | Engraved on the well |
+| `status` | the interface name beside the LED | 10 px | 1 px | Engraved on the slab |
+| `control` | `Auto` on its raised plate | 10 px | 1 px | Stamped into the plate |
+
+Every readout also carries `font-feature-settings: "tnum"`, so a changing digit
+never reflows the label beside it.
+
+Two limits are deliberate and documented rather than hidden. St cannot fill text
+with a gradient, so the "metal" of the glyphs is a flat tone plus the two light
+cues above; and St has no inner-shadow effect for text, so the dark inner shadow
+is a real second copy of the glyph, not a filter.
 
 ## Iconography
 

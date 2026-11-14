@@ -85,6 +85,29 @@ measured 4.16:1 at the minimum transparency. The strip now carries a dark base
 under the sheen, which holds it at 7.99:1 in the same conditions. No other text
 element failed in any tested condition.
 
+### The engraved type scale
+
+Measured on the rendered pixels of the engraved type (ink sampled at its
+brightest, the substrate just below it):
+
+| Element | Ratio |
+| --- | --- |
+| Caption ink on its punched band (`DOWNLOAD`) | 9.8:1 |
+| Reading ink on the recessed well (`826 KB/s`) | 14.8:1 |
+| `Peak` label on the well | 9.1:1 |
+| Statistic caption on its band (`SESSION RX`) | 10.6:1 |
+| Statistic value on the slab (`6.0 MB`) | 15.7:1 |
+| Status text on the slab (`eth0`) | 10.8:1 |
+| Brand ink on the name plate (`UthyPing`) | 8.8:1 |
+| Control ink on its plate (`Auto`) | 14.8:1 |
+
+The engraved pairs are stacked labels, so the shadow copy is marked with a
+decorative accessible role (`Clutter.AccessibleRole.NONE`) wherever the toolkit
+provides one: the pair is one piece of text, not two. Screen-reader output has
+still not been checked with a real reader, and on a Shell build without that
+role the copy would be exposed as a second label, which is the one known
+accessibility cost of the effect.
+
 ### The square orange palette
 
 Re-measured after the redesign, sampling the rendered pixels of the expanded

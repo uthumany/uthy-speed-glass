@@ -14,6 +14,11 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `zoom-meter-download.png` | The copper meter bar at a high reading, with its lit leading edge |
 | `zoom-meter-upload.png` | The steel-blue meter bar at a low reading |
 | `machined-panel-specimen.png` | Material sheet: the slot, both meters and the icon badge magnified |
+| `zoom-graph.png` | The traffic window magnified: frame, glazed reflection and both tubes |
+| `zoom-stats.png` | The statistic row, each value in its own machined slot |
+| `zoom-led.png` | The socketed connection LED with its bloom and reflection |
+| `graph-and-stats-specimen.png` | Material sheet: the window, the tube, a statistic slot and the LED |
+| `controls-specimen.png` | Material sheet: a push button at rest, hovered and pressed, plus the frameless header |
 | `typography-specimen.png` | Every engraved type role magnified, so the press depth can be judged: the letterpressed name, the reading, a caption band, a statistic band and value, the interface name and a control label |
 | `zoom-mini.png` | Enlarged crop of the mini card |
 | `zoom-title-strip.png` | The `UthyPing` name plate: square recess, inset press, dark upper lip, lit lower lip and engraved lettering |

@@ -102,6 +102,26 @@ carries meaning and a grey bar on a grey channel was hard to read; both meter
 colours are user settings and both are checked against the channel, not against
 the panel.
 
+### The instrument panel
+
+| Element | Ratio |
+| --- | --- |
+| Traffic tube against the window floor | 7.4:1 |
+| Statistic value in its slot | 11.1:1 |
+| Button label on its cap | 6.0:1 |
+| Cap against the tray it is mounted on | 4.8:1 |
+| LED dome against its socket | 17.7:1 |
+| Name on the header impression | 7.8:1 |
+
+The cap clears the tray it sits on by 4.8:1, and it is also bounded by a lit top
+edge and a cast shadow, so a button is never found by its fill alone. The
+pressed state replaces the cap with a socket rather than only darkening it, so
+the state survives a monochrome reading of the screen as well as a colour one.
+
+The header impression is a soft gradient with no outline, which is why its lit
+bottom wall is the only edge it gets: the name itself is still an engraved pair
+of labels, measured above.
+
 ### The engraved type scale
 
 Measured on the rendered pixels of the engraved type (ink sampled at its

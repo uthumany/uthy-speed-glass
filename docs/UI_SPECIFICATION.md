@@ -135,6 +135,66 @@ The meter under the reading is a physical gauge:
   track at each sample, so resizing the widget rescales the meter instead of
   leaving it stuck at a fixed width.
 
+## The instrument panel
+
+The widget is one dark brushed-metal panel lit from a single source above it.
+Every surface is cut into that panel rather than laid on top of it, and every
+light cue follows the same direction: lit on the top and left, shadowed on the
+bottom and right.
+
+### The traffic window
+
+The live chart sits in a recessed window: the same machined frame, two-pixel
+bevel and deep cavity as the metric panels, with a glazed reflection across its
+top half and a faint diagonal sheen over the plot. The reflection is a separate
+layer above the traces, so the traffic line is behind glass rather than on top of
+it.
+
+Each wave is a glossy tube rather than a hairline, drawn in four passes: the
+glow it throws, a dark underside offset a pixel down, the body itself, and a
+specular line along its top. Underneath, the area fills with a translucent
+gradient that fades to nothing by the baseline, so the two waves overlap without
+muddying. The highest download sample keeps its halo and leader line, and the
+newest sample keeps its live head on the right edge.
+
+### The statistic row
+
+Each statistic is its own small machined slot, evenly spaced across the row: a
+scaled-down frame, a one-pixel bevel and a shallower cavity than the metric
+panels, with the letterpressed band and the debossed value inside it. Nothing is
+shared between them, so a statistic never reads as a cell of a table.
+
+### The connection LED
+
+A real indicator lamp: a recessed socket cut into the metal, its upper wall
+shadowed and its lower wall catching the light, with a domed lens inside it. The
+dome is lit from the upper left and dark at the lower right, carries a specular
+highlight, and throws a bloom that spills onto the surrounding metal as a faint
+reflection below the socket. The colour carries the state and the accessible name
+repeats it in words.
+
+### The push buttons
+
+Pause, Auto, Refresh and Settings are physical push buttons on the toolbar. Each
+is a square cap of brushed steel with a beveled edge lit on the top and left, a
+glossy reflection across its top half, and a cast shadow underneath so it sits
+proud of the tray; the glyph is pressed into the cap in its own small impression.
+Hovering lifts the cap and brightens the gloss; the control tracks no hover state of its own, so nothing is drawn behind the cap. Pressing flips the whole thing:
+the cap is gone, the button is a socket, the inner shadows fall from the top and
+left, the far wall catches the light, and the gloss dims. The refresh glyph keeps
+a faint bloom, because it is the control that lights up when it is used.
+
+The toolbar icons in the header stay frame-free on purpose: the header is the one
+place where the panel should read as uninterrupted metal.
+
+### The header
+
+The header carries no frame. The impression behind the name darkens towards its
+top edge and is erased at both ends - no edge is drawn there at all - with a
+single lit line along its bottom wall, so the name still reads as pressed into
+the metal without a box drawn around it. The logo sits directly to its left on the same line, and the two are
+aligned on their shared centre.
+
 ## Iconography
 
 `icons/` holds the supplied skeuomorphic control set — brand, notification, pin, pinned pin, minimize, expand, close, pause, play, refresh, settings, share, download and upload — prepared by `scripts/prepare-icons.py` from the sources in `assets/icons-source/`. Every icon is a physical object with its own bevel, highlight and contact shadow.

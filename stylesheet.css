@@ -55,33 +55,61 @@
 
 /* ── Title strip: the top edge of the glass catching the key light ──────── */
 
+.uthy-status-line {
+  spacing: 6px;
+}
 .uthy-toolbar {
   min-height: 26px;
   spacing: 6px;
   padding-bottom: 4px;
 }
 
-/* The name plate. metalPlate.js paints the brushed metal, the punched
-   impression and the glass sheen, so the handle only carries the layout, the
-   one-pixel focus border and the hover cue: a surface cannot be painted in
-   Cairo and given a CSS background at the same time without one hiding the
-   other. */
+/* St matches the Shell theme's own `button:hover` and `button:focus` rules,
+   whose specificity beats a bare class selector, so a transparent control
+   picked up the theme's rounded blue outline as soon as the pointer crossed it.
+   Restating the state here keeps every state of these controls square and
+   transparent, and leaves the ring to the focus rule below. */
+.uthy-icon-button:hover,
+.uthy-icon-button:active,
+.uthy-icon-button:checked,
+.uthy-icon-button:focus,
+.uthy-control-button:hover,
+.uthy-control-button:active,
+.uthy-control-button:checked,
+.uthy-control-button:focus {
+  border-radius: 0;
+  border-color: transparent;
+  background-color: transparent;
+  background-gradient-direction: none;
+  background-gradient-start: transparent;
+  background-gradient-end: transparent;
+  box-shadow: none;
+}
+.uthy-icon-button:focus,
+.uthy-control-button:focus {
+  border-color: rgba(255, 138, 31, 0.85);
+}
+
+/* The header carries no frame. The impression behind the name is painted by
+   src/ui/metalPlate.js with no edge at all - it fades out at the sides - so
+   the name reads as pressed into the metal without a box around it, and the
+   logo sits directly to its left on the same line. The border is reserved for
+   the focus ring, which is why it is transparent at rest. */
 .uthy-drag-handle {
   min-height: 24px;
   padding: 1px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom-color: rgba(0, 0, 0, 0.45);
+  border: 1px solid transparent;
   border-radius: 0;
 }
 .uthy-drag-handle:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.10);
 }
 .uthy-drag-handle:focus {
   border-color: rgba(255, 138, 31, 0.85);
 }
 .uthy-brand-row {
-  spacing: 7px;
-  padding: 3px 9px;
+  spacing: 6px;
+  padding: 3px 8px;
 }
 
 /* The bundled icons carry their own depth, so they must be drawn in regular
@@ -134,37 +162,30 @@
 
 /* ── Tray controls: raised plates that lift and press ───────────────────── */
 
+/* A physical push button. The cap - brushed steel, a bevel, a glossy top half
+   and a cast shadow - and the sunken socket it presses into are painted by
+   src/ui/metalPlate.js, so the control itself only carries its size, the room
+   its label needs inside the cap, and the focus ring. */
 .uthy-control-button {
-  min-height: 26px;
-  padding: 2px 9px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-top-color: rgba(255, 255, 255, 0.38);
-  border-bottom-color: rgba(0, 0, 0, 0.62);
+  min-height: 30px;
+  padding: 3px 10px 5px;
+  border: 2px solid transparent;
   border-radius: 0;
-  color: #f2f5f8;
-  background-gradient-direction: vertical;
-  background-gradient-start: rgba(255, 255, 255, 0.16);
-  background-gradient-end: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55);
+  color: #eef3f9;
+  background-color: transparent;
+}
+.uthy-control-button:focus {
+  border-color: rgba(255, 138, 31, 0.85);
+}
+.uthy-tray-row {
+  spacing: 7px;
 }
 
-.uthy-control-button:hover {
-  border-top-color: rgba(255, 255, 255, 0.52);
-  background-gradient-start: rgba(255, 255, 255, 0.26);
-}
-
-/* Pressed: the plate drops into its own shadow. */
-.uthy-control-button:active {
-  background-gradient-start: rgba(0, 0, 0, 0.40);
-  background-gradient-end: rgba(0, 0, 0, 0.18);
-  border-top-color: rgba(0, 0, 0, 0.66);
-  border-bottom-color: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.72);
-}
-
+/* Hover and press are painted into the cap itself - the control takes no hover
+   pseudo-class at all - so no state of it draws a background. The reserved
+   border carries the focus ring, and nothing else about it is styled here. */
 .uthy-control-button:focus {
   border-color: rgba(255, 138, 31, 0.95);
-  box-shadow: 0 0 0 1px rgba(255, 138, 31, 0.55);
 }
 
 .uthy-control-label {
@@ -302,23 +323,38 @@
 
 /* Engraved window for the live chart: dark floor, dark upper wall, lit lower
    lip, and the grid drawn inside it by src/ui/historyGraph.js. */
+/* The window - frame, bevel, cavity and the glazed reflection - is painted by
+   src/ui/historyGraph.js and src/ui/metalPlate.js, so the plot only needs the
+   room the frame takes: a BinLayout applies no padding, so the inset lives on
+   the row the plot sits in. */
+.uthy-graph-window {
+  min-width: 0;
+}
+.uthy-graph-plot {
+  padding: 5px 6px 6px;
+}
+/* The mini layout gives the window 22 pixels, where the full padding would
+   leave no plot at all. */
+.uthy-graph-plot-tight {
+  padding: 3px 4px 4px;
+}
 .uthy-history-graph {
   border-radius: 0;
-  background-gradient-direction: vertical;
-  background-gradient-start: rgba(0, 2, 6, 0.52);
-  background-gradient-end: rgba(9, 14, 22, 0.34);
-  border: 1px solid rgba(0, 0, 0, 0.45);
-  border-bottom-color: rgba(255, 255, 255, 0.11);
-  box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.60);
 }
 
 .uthy-statistics-row {
+  spacing: 6px;
   padding-top: 4px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Each statistic is its own small machined slot, painted by
+   src/ui/metalPlate.js. */
 .uthy-stat-item {
+  min-width: 0;
+}
+.uthy-stat-content {
   spacing: 2px;
+  padding: 5px 7px 6px;
 }
 
 /* ── The floating tray: the top layer of the stack ──────────────────────── */

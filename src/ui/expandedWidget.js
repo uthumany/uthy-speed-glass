@@ -2,11 +2,8 @@ import St from 'gi://St';
 import {formatSpeed} from '../network/speedCalculator.js';
 import {formatBytes} from '../network/statistics.js';
 import {createHistoryGraph} from './historyGraph.js';
+import {createStatusLine} from './ledIndicator.js';
 import {createSpeedGauge, updateSpeedGauge} from './speedGauge.js';
-
-function valueOrDash(value, suffix = '') {
-    return Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : '—';
-}
 
 function createStat(title, initial) {
     const item = new St.BoxLayout({vertical: true, style_class: 'uthy-stat-item', x_expand: true});
@@ -43,12 +40,16 @@ export function createExpandedWidget(data, options) {
         statsRow.add_child(stat.actor);
     root.add_child(statsRow);
 
-    const status = new St.Label({text: '', style_class: 'uthy-expanded-status', x_expand: true});
-    root.add_child(status);
+    const statusLine = createStatusLine({
+        motion: options.motion ?? null,
+        styleClass: 'uthy-expanded-status',
+        ping: Boolean(options.pingEnabled),
+    });
+    root.add_child(statusLine.actor);
     root._uthyGauges = [downloadGauge, uploadGauge];
     root._uthyStats = {rx, tx, downAverage, upAverage};
     root._uthyGraph = graph;
-    root._uthyStatus = status;
+    root._uthyStatus = statusLine.actor;
 
     return {
         actor: root,
@@ -70,23 +71,7 @@ export function createExpandedWidget(data, options) {
             upAverage.value.text = formatSpeed(stats.uploadAverageMBps);
             if (graph)
                 graph.update(next.history);
-
-            const stateLabels = {
-                INITIALIZING: 'Waiting for a second counter sample',
-                CONNECTED: 'Connected',
-                DISCONNECTED: 'No active network interface',
-                PAUSED: 'Monitoring paused',
-                ERROR: 'Counter read failed; monitoring will retry',
-                DISABLED: 'Monitoring stopped',
-            };
-            let text = stateLabels[next.state] ?? 'Initializing';
-            if (next.interfaceName)
-                text += ` · ${next.interfaceName}`;
-            if (next.pingMs !== null && Number.isFinite(next.pingMs))
-                text += ` · Ping ${valueOrDash(next.pingMs, ' ms')}`;
-            else if (options.pingEnabled && next.pingMessage)
-                text += ` · ${next.pingMessage}`;
-            status.text = text;
+            statusLine.update(next);
         },
     };
 }

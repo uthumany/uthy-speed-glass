@@ -88,6 +88,10 @@ export class IconFactory {
     createButton({iconName = null, label = null, accessibleName, styleClass = 'uthy-icon-button',
         iconSize = 16, onClicked}) {
         const hasLabel = label !== null;
+        // Raised controls (the tray buttons) travel towards the pointer and
+        // press into their own shadow; the bare toolbar icons only squash, so
+        // the 3D artwork never slides around inside the title strip.
+        const raised = styleClass === 'uthy-control-button';
         const child = hasLabel
             ? new St.Label({text: label, style_class: 'uthy-control-label'})
             : this.createIcon({iconName, iconSize});
@@ -112,21 +116,33 @@ export class IconFactory {
         // so the squash, the overshoot and the material state stay in sync.
         record.pressId = button.connect('button-press-event', () => {
             button.add_style_pseudo_class('active');
-            this._motion.press(button);
+            if (raised)
+                this._motion.pressControl(button);
+            else
+                this._motion.press(button);
             return Clutter.EVENT_PROPAGATE;
         });
         record.releaseId = button.connect('button-release-event', () => {
             button.remove_style_pseudo_class('active');
-            this._motion.release(button);
+            if (raised)
+                this._motion.settleControl(button);
+            else
+                this._motion.release(button);
             return Clutter.EVENT_PROPAGATE;
         });
         record.enterId = button.connect('enter-event', () => {
-            this._motion.lift(button);
+            if (raised)
+                this._motion.raiseControl(button);
+            else
+                this._motion.lift(button);
             return Clutter.EVENT_PROPAGATE;
         });
         record.leaveId = button.connect('leave-event', () => {
             button.remove_style_pseudo_class('active');
-            this._motion.rest(button);
+            if (raised)
+                this._motion.settleControl(button);
+            else
+                this._motion.rest(button);
             return Clutter.EVENT_PROPAGATE;
         });
         if (onClicked)

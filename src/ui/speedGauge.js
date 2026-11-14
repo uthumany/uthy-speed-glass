@@ -1,10 +1,13 @@
 import St from 'gi://St';
 import {formatSpeed} from '../network/speedCalculator.js';
-import {meterFillStyle, meterTrackStyle, MOTION} from './glassMaterial.js';
+import {meterFillStyle, meterTrackStyle, wellStyle, MOTION} from './glassMaterial.js';
 
 export function createSpeedGauge({title, iconName, arrow, color, motion = null, compact = false,
     icons = null}) {
     const root = new St.BoxLayout({vertical: true, style_class: 'uthy-speed-gauge', x_expand: true});
+    // The metric card is a well, not a tile: the glass has been pressed in, so
+    // the dark press is its shadow and the lit lower lip is its border.
+    root.set_style(wellStyle());
     const heading = new St.BoxLayout({style_class: 'uthy-gauge-heading', x_expand: true});
     const glyph = icons
         ? icons.createIcon({iconName, iconSize: 18, styleClass: 'uthy-gauge-icon'})

@@ -1,5 +1,6 @@
 import St from 'gi://St';
 import {createHistoryGraph} from './historyGraph.js';
+import {createStatusLine} from './ledIndicator.js';
 import {formatSpeed} from '../network/speedCalculator.js';
 
 function makeCell({label, iconName, arrow, color, speed, motion, icons = null}) {
@@ -22,15 +23,6 @@ function makeCell({label, iconName, arrow, color, speed, motion, icons = null}) 
     return {cell, value, motion, lastReading: null};
 }
 
-function connectionText(data) {
-    const labels = {
-        INITIALIZING: 'Initializing', CONNECTED: 'Connected', DISCONNECTED: 'Disconnected',
-        PAUSED: 'Paused', ERROR: 'Monitor error', DISABLED: 'Disabled',
-    };
-    const base = labels[data.state] ?? 'Initializing';
-    return data.interfaceName ? `${base} · ${data.interfaceName}` : base;
-}
-
 export function createMiniWidget(data, options, {compact = false} = {}) {
     const root = new St.BoxLayout({vertical: true, style_class: compact ? 'uthy-mini-content uthy-compact-content' : 'uthy-mini-content'});
     const readings = new St.BoxLayout({style_class: 'uthy-mini-readings', x_expand: true});
@@ -46,15 +38,16 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
 
     let graph = null;
     if (options.showGraphs) {
-        graph = createHistoryGraph({height: compact ? 26 : 18,
+        graph = createHistoryGraph({height: compact ? 30 : 20,
             downloadColor: options.downloadColor, uploadColor: options.uploadColor});
         root.add_child(graph.actor);
         graph.update(data.history);
     }
 
-    const status = new St.Label({text: connectionText(data), style_class: 'uthy-status-line', x_expand: true});
-    status.clutter_text.ellipsize = 3;
-    root.add_child(status);
+    // The connection state is carried by the LED colour now, so the line only
+    // needs the interface name.
+    const status = createStatusLine({motion: options.motion ?? null});
+    root.add_child(status.actor);
 
     const syncCell = (cell, next) => {
         const reading = formatSpeed(next);
@@ -71,7 +64,7 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
             syncCell(upload, next.uploadMBps);
             download.value.accessible_name = `Download: ${formatSpeed(next.downloadMBps)}`;
             upload.value.accessible_name = `Upload: ${formatSpeed(next.uploadMBps)}`;
-            status.text = connectionText(next);
+            status.update(next);
             if (graph)
                 graph.update(next.history);
         },

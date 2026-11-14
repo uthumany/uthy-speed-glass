@@ -85,6 +85,23 @@ measured 4.16:1 at the minimum transparency. The strip now carries a dark base
 under the sheen, which holds it at 7.99:1 in the same conditions. No other text
 element failed in any tested condition.
 
+### The machined panels
+
+| Element | Ratio |
+| --- | --- |
+| Reading in its slot | 16.7:1 |
+| Caption in its slot band | 11.9:1 |
+| Peak line in its slot | 10.0:1 |
+| Statistic caption band | 8.8:1 |
+| Statistic value | 15.7:1 |
+| Aluminium frame against the cavity | 6.9:1 |
+| Meter bar against its channel | 15.4:1 |
+
+The upload meter is steel blue by default rather than silver, because the bar
+carries meaning and a grey bar on a grey channel was hard to read; both meter
+colours are user settings and both are checked against the channel, not against
+the panel.
+
 ### The engraved type scale
 
 Measured on the rendered pixels of the engraved type (ink sampled at its

@@ -18,6 +18,7 @@ A native GNOME Shell extension for a floating, translucent network monitor. It r
 - Square liquid-glass slab with a faint grid, a grain layer and silver rim lights, a floating control tray that hovers below the panel, and one glowing orange accent for anything focused, active or measured.
 - Live dual-layer area chart: gradient fills, a glow under each lit line, a haloed peak marker and a glowing live head on the newest sample.
 - 3D emerald connection LED beside the interface name, with tabular figures on every numeric readout so a changing digit never reflows its label.
+- The two metric panels are slots machined into brushed aluminium: a glinting frame, a two-pixel lit bevel, a deep cavity, and a glossy badge mounting each icon. Their meters are physical gauges: an etched, recessed channel with a brushed copper or steel-blue bar whose leading edge glows as it moves.
 - Engraved typography throughout: every label is pressed into the surface with a dark inner shadow above the glyph and a sharp lit edge below it, captions are punched into brushed-metal bands, and the name plate is a painted impression with UthyPing letterpressed into it.
 - Engraved **UthyPing** name plate: a deep inset recess in the title strip with the lettering cut into the surface.
 - Per-user installation, safe removal, local automated tests, schema validation, packaging, and GitHub Actions workflows.

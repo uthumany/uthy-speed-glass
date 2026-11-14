@@ -9,6 +9,11 @@ Captured from a nested GNOME Shell 46 session (`gnome-shell --nested --wayland`)
 | `uthy-glass-mini.png` | Mini layout on the desktop |
 | `uthy-glass-compact.png` | Compact layout with the taller chart |
 | `zoom-expanded.png` | Enlarged crop of the expanded card for reviewing the material |
+| `zoom-slot-download.png` | The download panel magnified: the machined frame, the bevel, the cavity, the badge, the band, the reading and the meter |
+| `zoom-slot-upload.png` | The upload panel magnified |
+| `zoom-meter-download.png` | The copper meter bar at a high reading, with its lit leading edge |
+| `zoom-meter-upload.png` | The steel-blue meter bar at a low reading |
+| `machined-panel-specimen.png` | Material sheet: the slot, both meters and the icon badge magnified |
 | `typography-specimen.png` | Every engraved type role magnified, so the press depth can be judged: the letterpressed name, the reading, a caption band, a statistic band and value, the interface name and a control label |
 | `zoom-mini.png` | Enlarged crop of the mini card |
 | `zoom-title-strip.png` | The `UthyPing` name plate: square recess, inset press, dark upper lip, lit lower lip and engraved lettering |

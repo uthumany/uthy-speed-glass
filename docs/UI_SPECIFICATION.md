@@ -101,6 +101,40 @@ with a gradient, so the "metal" of the glyphs is a flat tone plus the two light
 cues above; and St has no inner-shadow effect for text, so the dark inner shadow
 is a real second copy of the glyph, not a filter.
 
+## Metric panels and meters
+
+Each metric is a slot machined into a dark brushed-metal panel rather than a
+card sitting on top of one.
+
+| Part | How it is built |
+| --- | --- |
+| Frame | Brushed aluminium, with a one-pixel specular glint along its top edge and a shadow under its bottom edge |
+| Bevel | Two pixels wide, lit on the top and left inner edges, shadowed on the bottom and right, so the opening reads as chamfered rather than cut square |
+| Cavity | Dark floor easing towards the light at the bottom, with an inner gradient that reaches five pixels down from the opening |
+| Content | Near-white type for maximum contrast against the floor: the reading measures 16.7:1 and the caption 11.9:1 |
+| Badge | The metric icon mounted on a domed badge: dark steel lit from above, a lit top and left rim over a dark bottom and right one, a radial gloss across the upper half, a reflection along the lower edge, a contact shadow, and a faint tint of the metric colour |
+| Caption | The same letterpressed band used elsewhere in the interface |
+| Reading | The 22 px engraved reading, pressed two pixels into the cavity |
+| Peak | The engraved peak line, one pixel deep |
+
+The meter under the reading is a physical gauge:
+
+- **Channel**: a deeply recessed groove with a dark floor, a vertical inner
+  gradient, a shadow along its top edge (the light enters from above), a lit far
+  wall, square ends, a thin beveled metallic rim, and faint tick marks etched
+  every 24 pixels.
+- **Bar**: a brushed-metal body lit from above, with a horizontal grain, a
+  glass-like specular strip along its top third, a dark base line, and a bright
+  one-pixel leading edge with a glow trailing behind it, so the bar reads as
+  live while it moves.
+- **Colour**: the body is derived from the metric's accent colour - copper for
+  download, steel blue for upload - by lightening it for the top of the body and
+  darkening it for the bottom, so a user-chosen accent still produces a metal
+  rather than a flat fill.
+- **Travel**: the bar fills the channel it is actually in, measured from the
+  track at each sample, so resizing the widget rescales the meter instead of
+  leaving it stuck at a fixed width.
+
 ## Iconography
 
 `icons/` holds the supplied skeuomorphic control set — brand, notification, pin, pinned pin, minimize, expand, close, pause, play, refresh, settings, share, download and upload — prepared by `scripts/prepare-icons.py` from the sources in `assets/icons-source/`. Every icon is a physical object with its own bevel, highlight and contact shadow.

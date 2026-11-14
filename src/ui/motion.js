@@ -1,4 +1,4 @@
-// Motion helper for the Uthy Speed Glass widget.
+// Motion helper for the UthyPing widget.
 //
 // The spring vocabulary is the liquid part of the reference material model:
 // press compresses the surface, release overshoots back to rest, hover lifts

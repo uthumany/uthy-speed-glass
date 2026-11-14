@@ -2,11 +2,16 @@ import St from 'gi://St';
 import {createHistoryGraph} from './historyGraph.js';
 import {formatSpeed} from '../network/speedCalculator.js';
 
-function makeCell({label, arrow, color, speed, motion}) {
+function makeCell({label, iconName, arrow, color, speed, motion, icons = null}) {
     const cell = new St.BoxLayout({vertical: true, style_class: 'uthy-mini-cell', x_expand: true});
     const top = new St.BoxLayout({style_class: 'uthy-mini-speed-row'});
-    const symbol = new St.Label({text: arrow, style_class: 'uthy-mini-arrow'});
-    symbol.set_style(`color: ${color};`);
+    // The bundled metric icon when it is installed, otherwise the typographic
+    // arrow tinted with the user's accent colour.
+    const symbol = icons
+        ? icons.createIcon({iconName, iconSize: 16, styleClass: 'uthy-mini-icon'})
+        : new St.Label({text: arrow, style_class: 'uthy-mini-arrow'});
+    if (!icons)
+        symbol.set_style(`color: ${color};`);
     const value = new St.Label({text: formatSpeed(speed), style_class: 'uthy-mini-speed', x_expand: true});
     value.clutter_text.ellipsize = 3;
     const caption = new St.Label({text: label, style_class: 'uthy-mini-caption'});
@@ -30,9 +35,11 @@ export function createMiniWidget(data, options, {compact = false} = {}) {
     const root = new St.BoxLayout({vertical: true, style_class: compact ? 'uthy-mini-content uthy-compact-content' : 'uthy-mini-content'});
     const readings = new St.BoxLayout({style_class: 'uthy-mini-readings', x_expand: true});
     const download = makeCell({label: 'DOWNLOAD', arrow: '↓', color: options.downloadColor,
-        speed: data.downloadMBps, motion: options.motion});
+        iconName: 'download', speed: data.downloadMBps, motion: options.motion,
+        icons: options.icons ?? null});
     const upload = makeCell({label: 'UPLOAD', arrow: '↑', color: options.uploadColor,
-        speed: data.uploadMBps, motion: options.motion});
+        iconName: 'upload', speed: data.uploadMBps, motion: options.motion,
+        icons: options.icons ?? null});
     readings.add_child(download.cell);
     readings.add_child(upload.cell);
     root.add_child(readings);

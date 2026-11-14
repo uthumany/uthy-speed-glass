@@ -20,7 +20,14 @@
  *      size and focus ring live in src/ui/glassMaterial.js, and the toolbar's
  *      specular edge is applied there too.
  *   3. Dividers use inset shadows instead of per-side border shorthands,
- *      which St does not guarantee to parse.
+ *      which St does not guarantee to parse. The sunken name slot is the one
+ *      exception, and it degrades to a plain recess if the lips are ignored.
+ *   4. The supplied icons are physical objects with their own bevel, highlight
+ *      and contact shadow, so their buttons draw no plate, border or shadow:
+ *      a frame around them would double every edge.
+ *   5. St paints an outer box-shadow as a filled block when the actor has no
+ *      background and ignores an inset one, so the focus rings on the bare
+ *      controls are borders, reserved transparent and coloured on focus.
  */
 
 /* ── Card shell ─────────────────────────────────────────────────────────── */
@@ -39,36 +46,47 @@
   padding-bottom: 4px;
 }
 
+/* The name plate is a deep recess: a dark floor, an inset shadow that reads as
+   a press into the card, a dark upper lip and a lit lower lip. The lettering
+   is engraved - dim, with a single light shadow below the glyph - so it looks
+   cut into the surface instead of printed on it. */
 .uthy-drag-handle {
   min-height: 24px;
-  border-radius: 8px;
-  padding: 0 6px;
+  padding: 2px 9px;
   spacing: 6px;
+  border-radius: 10px;
+  background-color: rgba(2, 5, 12, 0.72);
+  box-shadow: inset 0 5px 10px rgba(0, 1, 6, 0.95);
+  border-top: 1px solid rgba(0, 0, 0, 0.70);
+  border-bottom: 1px solid rgba(196, 222, 255, 0.14);
 }
 
+/* Hovering lifts the recess a little instead of drawing a plate. */
 .uthy-drag-handle:hover {
-  background-color: rgba(255, 255, 255, 0.10);
+  background-color: rgba(6, 12, 24, 0.62);
 }
 
 .uthy-drag-handle:focus {
-  background-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.55);
+  background-color: rgba(10, 18, 34, 0.80);
 }
 
 .uthy-brand {
-  color: rgba(245, 248, 255, 0.72);
-  font-size: 9px;
+  color: rgba(180, 201, 226, 0.96);
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.9px;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.85);
+  letter-spacing: 0.8px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.17);
 }
 
-/* The bundled icons are pre-shaded, so they must be drawn in regular style:
-   St.Icon defaults to symbolic, which flattens them into a monochrome mask
-   and throws the baked lighting away. The symbolic fallback used when an
-   asset is missing is tinted by the colour below instead. */
+/* The bundled icons carry their own depth, so they must be drawn in regular
+   style: St.Icon defaults to symbolic, which flattens them into a monochrome
+   mask and throws the artwork away. The symbolic fallback used when an asset
+   is missing is tinted by the colour below instead. */
 .uthy-3d-icon,
-.uthy-brand-icon {
+.uthy-brand-icon,
+.uthy-mini-icon,
+.uthy-gauge-icon,
+.uthy-panel-icon {
   color: #eaf3ff;
   -st-icon-style: regular;
 }
@@ -78,39 +96,34 @@
   -st-icon-style: symbolic;
 }
 
-/* ── Tactile controls: raised glass beads that press inward ─────────────── */
+/* ── Tactile controls: bare 3D icons, drawn without a frame ─────────────── */
 
 .uthy-icon-button {
-  min-width: 22px;
-  min-height: 22px;
-  padding: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 8px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 1px;
+  /* The ring is reserved here and only coloured on focus, so focusing never
+     resizes the control. St draws an outer box-shadow as a filled block
+     behind a transparent actor, so a shadow cannot be used for this. */
+  border: 2px solid transparent;
+  border-radius: 12px;
   color: #edf4ff;
-  background-gradient-direction: vertical;
-  background-gradient-start: rgba(255, 255, 255, 0.20);
-  background-gradient-end: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 2px 5px rgba(3, 8, 18, 0.45);
+  background-color: transparent;
 }
 
+/* Hover is a soft wash rather than a plate, and the press squash comes from
+   the motion helper, so the icon itself stays the only solid object. */
 .uthy-icon-button:hover {
-  border-color: rgba(228, 242, 255, 0.42);
-  background-gradient-start: rgba(255, 255, 255, 0.34);
-  background-gradient-end: rgba(255, 255, 255, 0.10);
-  box-shadow: 0 4px 10px rgba(3, 8, 18, 0.50);
+  background-color: rgba(226, 240, 255, 0.16);
 }
 
-/* Pressed: the bead sinks into the surface, so the shadow flips inward. */
 .uthy-icon-button:active {
-  border-color: rgba(255, 255, 255, 0.16);
-  background-gradient-start: rgba(2, 6, 16, 0.34);
-  background-gradient-end: rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 3px 6px rgba(2, 6, 16, 0.62);
+  background-color: rgba(4, 10, 22, 0.45);
 }
 
+/* The focus ring stays: without it a keyboard user has no visible focus. */
 .uthy-icon-button:focus {
-  border-color: rgba(126, 226, 255, 0.95);
-  box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.50);
+  border-color: rgba(39, 201, 255, 0.95);
 }
 
 .uthy-control-button {

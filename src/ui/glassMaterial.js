@@ -1,4 +1,4 @@
-// Material system for the Uthy Speed Glass widget.
+// Material system for the UthyPing widget.
 //
 // The model is adapted from the QuickLiquid liquid-glass description
 // (https://quickliquid.vercel.app/): one physical definition of tint, sheen,

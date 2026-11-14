@@ -19,10 +19,10 @@ function createStat(title, initial) {
 export function createExpandedWidget(data, options) {
     const root = new St.BoxLayout({vertical: true, style_class: 'uthy-expanded-content'});
     const gauges = new St.BoxLayout({style_class: 'uthy-gauges-row', x_expand: true});
-    const downloadGauge = createSpeedGauge({title: 'DOWNLOAD', arrow: '↓', color: options.downloadColor,
-        motion: options.motion});
-    const uploadGauge = createSpeedGauge({title: 'UPLOAD', arrow: '↑', color: options.uploadColor,
-        motion: options.motion});
+    const downloadGauge = createSpeedGauge({title: 'DOWNLOAD', iconName: 'download', arrow: '↓',
+        color: options.downloadColor, motion: options.motion, icons: options.icons ?? null});
+    const uploadGauge = createSpeedGauge({title: 'UPLOAD', iconName: 'upload', arrow: '↑',
+        color: options.uploadColor, motion: options.motion, icons: options.icons ?? null});
     gauges.add_child(downloadGauge);
     gauges.add_child(uploadGauge);
     root.add_child(gauges);

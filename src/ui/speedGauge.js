@@ -2,11 +2,15 @@ import St from 'gi://St';
 import {formatSpeed} from '../network/speedCalculator.js';
 import {meterFillStyle, meterTrackStyle, MOTION} from './glassMaterial.js';
 
-export function createSpeedGauge({title, arrow, color, motion = null, compact = false}) {
+export function createSpeedGauge({title, iconName, arrow, color, motion = null, compact = false,
+    icons = null}) {
     const root = new St.BoxLayout({vertical: true, style_class: 'uthy-speed-gauge', x_expand: true});
     const heading = new St.BoxLayout({style_class: 'uthy-gauge-heading', x_expand: true});
-    const glyph = new St.Label({text: arrow, style_class: 'uthy-gauge-arrow'});
-    glyph.set_style(`color: ${color};`);
+    const glyph = icons
+        ? icons.createIcon({iconName, iconSize: 18, styleClass: 'uthy-gauge-icon'})
+        : new St.Label({text: arrow, style_class: 'uthy-gauge-arrow'});
+    if (!icons)
+        glyph.set_style(`color: ${color};`);
     const titleLabel = new St.Label({text: title, style_class: 'uthy-gauge-title', x_expand: true});
     const valueLabel = new St.Label({text: '-- MB/s', style_class: 'uthy-gauge-value'});
     heading.add_child(glyph);

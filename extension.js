@@ -55,9 +55,11 @@ export default class UthySpeedGlassExtension extends Extension {
 
     _createPanelIndicator() {
         this._indicator = new PanelMenu.Button(0.0, this.metadata.name, false);
-        this._indicator.add_child(new St.Icon({
-            icon_name: 'network-transmit-receive-symbolic',
-            style_class: 'system-status-icon',
+        // The bundled notification mark, so the panel entry matches the card.
+        this._indicator.add_child(this._controller.createIcon({
+            iconName: 'notification',
+            iconSize: 16,
+            styleClass: 'uthy-panel-icon',
         }));
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 

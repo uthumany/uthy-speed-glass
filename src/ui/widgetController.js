@@ -45,7 +45,7 @@ export class WidgetController {
             reactive: true,
             can_focus: true,
             track_hover: true,
-            accessible_name: 'Uthy Speed Glass network monitor',
+            accessible_name: 'UthyPing network monitor',
         });
         this._toolbar = new St.BoxLayout({style_class: 'uthy-toolbar', x_expand: true});
         this._dragHandle = new St.BoxLayout({
@@ -54,31 +54,33 @@ export class WidgetController {
             can_focus: true,
             x_expand: true,
         });
-        this._brandIcon = this._icons.createIcon({iconName: 'droplet-symbolic', iconSize: 14,
+        // The title strip is itself the recess: the drag handle carries the
+        // sunken material, so the name reads as pressed into the card.
+        this._brandIcon = this._icons.createIcon({iconName: 'brand', iconSize: 16,
             styleClass: 'uthy-brand-icon'});
         this._dragHandle.add_child(this._brandIcon);
-        this._brandLabel = new St.Label({text: 'UTHY  /  SPEED GLASS', style_class: 'uthy-brand',
+        this._brandLabel = new St.Label({text: 'UthyPing', style_class: 'uthy-brand',
             x_expand: true});
         this._dragHandle.add_child(this._brandLabel);
         this._toolbar.add_child(this._dragHandle);
 
         this._pin = this._icons.createButton({
-            iconName: 'pin-symbolic', accessibleName: 'Pin widget position',
+            iconName: 'pin', accessibleName: 'Pin widget position',
             onClicked: () => this._togglePin(),
         });
         this._toolbar.add_child(this._pin.button);
         this._minimize = this._icons.createButton({
-            iconName: 'minimize-symbolic', accessibleName: 'Minimize widget',
-            onClicked: () => this.minimize(),
+            iconName: 'minimize', accessibleName: 'Minimize widget',
+            onClicked: () => this._setMinimized(true),
         });
         this._toolbar.add_child(this._minimize.button);
         this._expand = this._icons.createButton({
-            iconName: 'expand-symbolic', accessibleName: 'Expand widget',
-            onClicked: () => this.expand(),
+            iconName: 'expand', accessibleName: 'Expand widget',
+            onClicked: () => this._setMinimized(false),
         });
         this._toolbar.add_child(this._expand.button);
         this._close = this._icons.createButton({
-            iconName: 'close-symbolic', accessibleName: 'Hide widget',
+            iconName: 'close', accessibleName: 'Hide widget',
             onClicked: () => this.setVisible(false),
         });
         this._toolbar.add_child(this._close.button);
@@ -303,7 +305,7 @@ export class WidgetController {
         const row = new St.BoxLayout({style_class: 'uthy-controls-row', x_expand: true});
         const paused = Boolean(this._data.paused);
         const pause = this._icons.createButton({
-            iconName: paused ? 'play-symbolic' : 'pause-symbolic',
+            iconName: paused ? 'play' : 'pause',
             accessibleName: paused ? 'Resume monitoring' : 'Pause monitoring',
             onClicked: () => {
                 if (this._monitor.paused)
@@ -319,11 +321,11 @@ export class WidgetController {
             onClicked: () => this._cycleInterface(),
         });
         const reset = this._icons.createButton({
-            iconName: 'refresh-symbolic', accessibleName: 'Reset session statistics',
+            iconName: 'refresh', accessibleName: 'Reset session statistics',
             onClicked: () => this._monitor.resetStatistics(),
         });
         const prefs = this._icons.createButton({
-            iconName: 'settings-symbolic', accessibleName: 'Open preferences',
+            iconName: 'settings', accessibleName: 'Open preferences',
             onClicked: () => this._extension.openPreferences(),
         });
         row.add_child(pause.button);
@@ -340,7 +342,7 @@ export class WidgetController {
             return;
         const row = this._expandedControls.actor;
         const paused = Boolean(this._data.paused);
-        this._icons.setIcon(row._uthyPause, paused ? 'play-symbolic' : 'pause-symbolic');
+        this._icons.setIcon(row._uthyPause, paused ? 'play' : 'pause');
         this._icons.setAccessibleName(row._uthyPause, paused ? 'Resume monitoring' : 'Pause monitoring');
         this._icons.setLabel(row._uthyInterface, this._interfaceButtonLabel());
     }
@@ -366,7 +368,7 @@ export class WidgetController {
 
     _syncButtons() {
         const pinned = Boolean(this._settings.get('pinned'));
-        this._icons.setIcon(this._pin, pinned ? 'pin-locked-symbolic' : 'pin-symbolic');
+        this._icons.setIcon(this._pin, pinned ? 'pin-locked' : 'pin');
         this._icons.setAccessibleName(this._pin, pinned ? 'Unpin widget position' : 'Pin widget position');
         this._icons.setVisible(this._minimize, !this._minimized && this._mode !== 'mini');
         this._icons.setVisible(this._expand, this._minimized || this._mode !== 'expanded');
@@ -384,6 +386,11 @@ export class WidgetController {
             this._motion.stopIdle(this._brandIcon);
     }
 
+    /** Bundled icon, for the panel indicator the extension owns. */
+    createIcon(options) {
+        return this._icons.createIcon(options);
+    }
+
     _appearanceOptions() {
         return {
             downloadColor: this._settings.downloadColor,
@@ -392,6 +399,9 @@ export class WidgetController {
             reduceMotion: this._motion.reducedMotion,
             motion: this._motion,
             graphHeight: this._settings.get('graph-height'),
+            // The metric marks are the bundled download and upload icons;
+            // without the factory the widgets fall back to text arrows.
+            icons: this._icons,
             pingEnabled: Boolean(this._settings.get('ping-enabled')),
         };
     }

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Uthy Speed Glass. Keep changes focused, reviewable, and compatible with the declared GNOME Shell range.
+Thanks for helping improve UthyPing. Keep changes focused, reviewable, and compatible with the declared GNOME Shell range.
 
 ## Before opening a pull request
 

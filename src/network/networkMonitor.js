@@ -178,7 +178,7 @@ export class NetworkMonitor {
             this._state = 'ERROR';
             this._downloadMBps = null;
             this._uploadMBps = null;
-            logError(error, 'Uthy Speed Glass sampling error');
+            logError(error, 'UthyPing sampling error');
             this._publish();
         }
     }

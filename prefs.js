@@ -1,5 +1,6 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Gdk from 'gi://Gdk?version=4.0';
 import Gtk from 'gi://Gtk?version=4.0';
 import Adw from 'gi://Adw';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
@@ -65,7 +66,19 @@ export default class UthySpeedGlassPreferences extends ExtensionPreferences {
         window.default_width = 650;
         window.default_height = 760;
 
-        const page = new Adw.PreferencesPage({title: 'Uthy Speed Glass', icon_name: 'network-transmit-receive-symbolic'});
+        // Show the bundled logo on the page: GTK looks it up by file name once
+        // the extension's icon directory is on the icon theme search path.
+        let pageIcon = 'network-transmit-receive-symbolic';
+        try {
+            const icons = this.dir.get_child('icons');
+            Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).add_search_path(icons.get_path());
+            if (icons.get_child('brand.png').query_exists(null))
+                pageIcon = 'brand';
+        } catch (_error) {
+            // Keep the themed icon if the directory cannot be registered.
+        }
+
+        const page = new Adw.PreferencesPage({title: 'UthyPing', icon_name: pageIcon});
         window.add(page);
 
         const general = new Adw.PreferencesGroup({title: 'Monitoring', description: 'Choose how traffic is sampled and which interface is measured.'});

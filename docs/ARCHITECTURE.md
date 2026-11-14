@@ -1,6 +1,6 @@
 # Architecture
 
-Uthy Speed Glass is a GNOME Shell ES-module extension. The Shell runtime owns the floating St actors and one GLib sampling source. `prefs.js` is launched separately by GNOME and uses only GTK4, Libadwaita, Gio, and GLib; it never imports Shell, St, Meta, or Clutter.
+UthyPing (repository `uthy-speed-glass`) is a GNOME Shell ES-module extension. The Shell runtime owns the floating St actors and one GLib sampling source. `prefs.js` is launched separately by GNOME and uses only GTK4, Libadwaita, Gio, and GLib; it never imports Shell, St, Meta, or Clutter.
 
 ## Component architecture
 

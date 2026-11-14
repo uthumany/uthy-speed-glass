@@ -1,6 +1,6 @@
 ---
 name: Bug report
-description: Report a reproducible issue in Uthy Speed Glass
+description: Report a reproducible issue in UthyPing
 title: "[Bug]: "
 labels: [bug]
 assignees: []

@@ -23,7 +23,7 @@ expected_uuid = 'uthy-speed-glass@uthy'
 expected_schema = 'org.gnome.shell.extensions.uthyspeedglass'
 assert metadata.get('uuid') == expected_uuid, 'metadata UUID mismatch'
 assert metadata.get('settings-schema') == expected_schema, 'settings schema mismatch'
-assert metadata.get('name') == 'Uthy Speed Glass', 'name mismatch'
+assert metadata.get('name') == 'UthyPing', 'name mismatch'
 assert isinstance(metadata.get('version'), int) and metadata['version'] >= 1, 'invalid extension version'
 assert re.fullmatch(r'\d+\.\d+\.\d+', metadata.get('version-name', '')), 'invalid semantic version-name'
 shell_versions = metadata.get('shell-version')

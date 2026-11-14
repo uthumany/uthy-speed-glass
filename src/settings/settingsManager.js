@@ -29,7 +29,7 @@ export class SettingsManager {
     }
 
     get uploadColor() {
-        return this._readColor('upload-color', '#93A6B8');
+        return this._readColor('upload-color', '#6E96BC');
     }
 
     get(key) {

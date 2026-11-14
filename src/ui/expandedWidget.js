@@ -9,7 +9,7 @@ import {createEngravedBand, createEngravedText} from './engravedText.js';
 function createStat(title, initial) {
     const item = new St.BoxLayout({vertical: true, style_class: 'uthy-stat-item', x_expand: true});
     item.add_child(createEngravedBand({text: title, role: 'stat-title'}).actor);
-    const value = createEngravedText({text: initial, role: 'stat-value'});
+    const value = createEngravedText({text: initial, role: 'stat-value', xExpand: true});
     item.add_child(value.actor);
     return {actor: item, value};
 }

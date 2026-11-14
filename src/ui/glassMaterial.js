@@ -141,19 +141,6 @@ export function cardSurfaceStyle({fontSize, alpha, focused = false}) {
  * press is the one shadow and the lit lower edge is a border. Together they
  * read as a cavity rather than a tile.
  */
-export function wellStyle() {
-    return [
-        'background-gradient-direction: vertical;',
-        'background-gradient-start: rgba(0, 2, 6, 0.46);',
-        'background-gradient-end: rgba(10, 16, 26, 0.30);',
-        'border: 1px solid rgba(0, 0, 0, 0.42);',
-        'border-bottom-color: rgba(255, 255, 255, 0.13);',
-        'border-right-color: rgba(255, 255, 255, 0.07);',
-        'border-radius: 0;',
-        'box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.62);',
-    ].join(' ');
-}
-
 /**
  * The floating tray the bottom controls sit on. It is the top layer of the
  * stack, so it spends its shadow on a wide cast shadow rather than on an
@@ -168,39 +155,6 @@ export function floatingTrayStyle() {
         'border-bottom-color: rgba(0, 0, 0, 0.55);',
         'border-radius: 0;',
         'box-shadow: 0 16px 28px rgba(0, 0, 0, 0.62);',
-    ].join(' ');
-}
-
-/**
- * The liquid inside a meter: a lit bead of the user's accent colour with a
- * bevel, a specular top edge and a small shadow it casts onto the groove.
- * The bloom uses the one available shadow slot.
- */
-export function meterFillStyle({accent}) {
-    const color = hexToRgb(accent);
-    const lit = lighten(color, 0.45);
-    const deep = darken(color, 0.30);
-    return [
-        'background-gradient-direction: vertical;',
-        `background-gradient-start: ${rgba(lit, 0.98)};`,
-        `background-gradient-end: ${rgba(deep, 0.95)};`,
-        `border-top: 1px solid ${rgba(lighten(color, 0.72), 0.85)};`,
-        `border-bottom: 1px solid ${rgba(deep, 0.90)};`,
-        'border-radius: 0;',
-        `box-shadow: 0 0 10px ${rgba(color, 0.55)};`,
-    ].join(' ');
-}
-
-/** A recessed groove for the meter track, square and pressed into the well. */
-export function meterTrackStyle() {
-    return [
-        'background-gradient-direction: vertical;',
-        'background-gradient-start: rgba(0, 1, 4, 0.72);',
-        'background-gradient-end: rgba(6, 10, 18, 0.48);',
-        'border: 1px solid rgba(0, 0, 0, 0.50);',
-        'border-bottom-color: rgba(255, 255, 255, 0.10);',
-        'border-radius: 0;',
-        'box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.66);',
     ].join(' ');
 }
 

@@ -274,27 +274,31 @@
 /* The well itself (dual inset cue, square, recessed) is set from
    src/ui/glassMaterial.js so the whole cavity is described in one place. */
 .uthy-speed-gauge {
-  spacing: 6px;
   min-width: 0;
-  padding: 7px 8px;
+}
+
+/* The panel is a slot machined into brushed aluminium, painted by
+   src/ui/metalPlate.js, so the gauge itself only places the content inside the
+   cavity. St.Widget with a BinLayout does not apply padding, so the inset
+   lives on this row: it has to clear the frame and its two-pixel bevel. */
+.uthy-gauge-content {
+  spacing: 6px;
+  padding: 9px 11px 10px;
+  min-width: 0;
 }
 
 .uthy-gauge-heading {
-  spacing: 5px;
+  spacing: 7px;
 }
 
-/* Groove and liquid are materialised in glassMaterial.js because both depend
-   on the user's accent colour. */
-.uthy-meter-track {
-  min-height: 9px;
-  border-radius: 0;
+/* The channel and the bar are painted by src/ui/meterBar.js: the channel needs
+   an inner shadow, an inner gradient and etched ticks, and the bar needs a
+   brushed body, a specular strip and a lit leading edge, none of which St can
+   express in one declaration. */
+.uthy-meter {
+  margin-top: 1px;
 }
 
-.uthy-meter-fill {
-  min-width: 6px;
-  min-height: 9px;
-  border-radius: 0;
-}
 
 /* Engraved window for the live chart: dark floor, dark upper wall, lit lower
    lip, and the grid drawn inside it by src/ui/historyGraph.js. */

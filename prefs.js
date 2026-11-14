@@ -160,7 +160,7 @@ export default class UthySpeedGlassPreferences extends ExtensionPreferences {
             settings.get_int('graph-height'), 24, 100, value => settings.set_int('graph-height', value));
 
         this._addColorRow(appearance, settings, 'download-color', 'Download accent color', '#FF8A1F');
-        this._addColorRow(appearance, settings, 'upload-color', 'Upload accent color', '#93A6B8');
+        this._addColorRow(appearance, settings, 'upload-color', 'Upload accent color', '#6E96BC');
         addSwitch(appearance, settings, 'show-graphs', 'Show history graphs', 'Draw recent download and upload traffic.');
 
         const behavior = new Adw.PreferencesGroup({title: 'Behavior', description: 'Control placement, motion, and optional local latency checks.'});

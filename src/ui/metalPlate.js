@@ -23,6 +23,16 @@ export const METAL_TONES = {
     slab: {top: [44, 49, 57], bottom: [16, 19, 25], grain: 0.065, sweep: 0.040},
 };
 
+/** Brushed aluminium: the frame a machined slot is cut into. */
+export const ALUMINIUM = {top: [108, 115, 126], bottom: [44, 49, 58], grain: 0.105, sweep: 0.075};
+
+function stroke(cr, x0, y0, x1, y1) {
+    cr.newPath();
+    cr.moveTo(x0, y0);
+    cr.lineTo(x1, y1);
+    cr.stroke();
+}
+
 function makeRandom(seed) {
     let state = seed >>> 0;
     return () => {
@@ -157,19 +167,19 @@ export function paintGlassOverlay(cr, width, height, options = {}) {
 }
 
 /**
- * A plate actor. It fills whatever box it is given, repaints only when its size
- * changes, and is never reactive: it is a surface, not a control.
+ * A painted surface. Every plate in the project goes through this factory so
+ * the lifecycle is identical: clear, run the painter, dispose the context, and
+ * repaint only when the size changes. Nothing here is ever reactive - a plate
+ * is a surface, not a control.
  */
-export function createMetalPlate({styleClass = 'uthy-metal-plate', tone = 'band', recess = true,
-    glass = true, recessOptions = {}} = {}) {
+export function createPaintedArea({styleClass, paint, xExpand = true, yExpand = true}) {
     const area = new St.DrawingArea({
         style_class: styleClass,
-        x_expand: true,
-        y_expand: true,
+        x_expand: xExpand,
+        y_expand: yExpand,
         can_focus: false,
         reactive: false,
     });
-    const palette = METAL_TONES[tone] ?? METAL_TONES.band;
 
     area.connect('repaint', widget => {
         const cr = widget.get_context();
@@ -177,7 +187,7 @@ export function createMetalPlate({styleClass = 'uthy-metal-plate', tone = 'band'
             return;
         const width = widget.get_width();
         const height = widget.get_height();
-        if (width <= 3 || height <= 3) {
+        if (width <= 2 || height <= 2) {
             cr.$dispose?.();
             return;
         }
@@ -185,11 +195,7 @@ export function createMetalPlate({styleClass = 'uthy-metal-plate', tone = 'band'
             cr.setOperator(0); // CLEAR
             cr.paint();
             cr.setOperator(2); // OVER
-            paintBrushedMetal(cr, width, height, palette);
-            if (recess)
-                paintPunchedRecess(cr, width, height, recessOptions);
-            if (glass)
-                paintGlassOverlay(cr, width, height);
+            paint(cr, width, height);
         } finally {
             cr.$dispose?.();
         }
@@ -199,4 +205,95 @@ export function createMetalPlate({styleClass = 'uthy-metal-plate', tone = 'band'
     area.connect('notify::width', queue);
     area.connect('notify::height', queue);
     return area;
+}
+
+/** A brushed-metal plate with an optional punched impression and glass sheen. */
+export function createMetalPlate({styleClass = 'uthy-metal-plate', tone = 'band', recess = true,
+    glass = true, recessOptions = {}} = {}) {
+    const palette = METAL_TONES[tone] ?? METAL_TONES.band;
+    return createPaintedArea({
+        styleClass,
+        paint: (cr, width, height) => {
+            paintBrushedMetal(cr, width, height, palette);
+            if (recess)
+                paintPunchedRecess(cr, width, height, recessOptions);
+            if (glass)
+                paintGlassOverlay(cr, width, height);
+        },
+    });
+}
+
+/**
+ * A slot machined into brushed aluminium: a thin metallic frame with a
+ * specular glint along its top edge, and a cavity cut into it whose two-pixel
+ * bevel catches the light on the top and left inner edges while the bottom and
+ * right edges fall into shadow, under an inner gradient that reaches five
+ * pixels down from the opening.
+ */
+export function paintMachinedSlot(cr, width, height, options = {}) {
+    const {
+        inset = 3,
+        bevel = 2,
+        depth = 5,
+        glint = 0.6,
+        frame = ALUMINIUM,
+        cavityTop = [4, 6, 10],
+        cavityBottom = [17, 21, 29],
+    } = options;
+    if (width <= 8 || height <= 8)
+        return;
+
+    paintBrushedMetal(cr, width, height, frame);
+
+    // The frame's own edges: a glint along the top, a shadow under the bottom.
+    cr.setLineWidth(1);
+    cr.setSourceRGBA(1, 1, 1, glint);
+    stroke(cr, 0.5, 0.5, width - 0.5, 0.5);
+    cr.setSourceRGBA(0, 0, 0, 0.6);
+    stroke(cr, 0.5, height - 0.5, width - 0.5, height - 0.5);
+
+    const x = inset;
+    const y = inset;
+    const w = width - inset * 2;
+    const h = height - inset * 2;
+    if (w <= 6 || h <= 6)
+        return;
+
+    // The cavity floor: dark at the opening, easing towards the light at the
+    // bottom of the cut.
+    fillGradient(cr, x, y, w, h, cavityTop, cavityBottom);
+
+    // The inner gradient that makes the slot read as deep.
+    const shade = new cairo.LinearGradient(x, y, x, y + Math.min(h, depth + 2));
+    shade.addColorStopRGBA(0, 0, 0, 0, 0.9);
+    shade.addColorStopRGBA(1, 0, 0, 0, 0);
+    cr.setSource(shade);
+    cr.rectangle(x, y, w, h);
+    cr.fill();
+
+    const side = new cairo.LinearGradient(x, y, x + Math.min(w, depth + 4), y);
+    side.addColorStopRGBA(0, 0, 0, 0, 0.5);
+    side.addColorStopRGBA(1, 0, 0, 0, 0);
+    cr.setSource(side);
+    cr.rectangle(x, y, w, h);
+    cr.fill();
+
+    // The machined bevel: lit on the top and left, shadowed on the bottom and
+    // right, two pixels wide and fading inwards.
+    for (let step = 0; step < bevel; step++) {
+        const fade = 1 - step / (bevel + 0.5);
+        cr.setSourceRGBA(1, 1, 1, 0.44 * fade);
+        stroke(cr, x + step + 0.5, y + step + 0.5, x + w - step - 0.5, y + step + 0.5);
+        stroke(cr, x + step + 0.5, y + step + 0.5, x + step + 0.5, y + h - step - 0.5);
+        cr.setSourceRGBA(0, 0, 0, 0.55 * fade);
+        stroke(cr, x + step + 0.5, y + h - step - 0.5, x + w - step - 0.5, y + h - step - 0.5);
+        stroke(cr, x + w - step - 0.5, y + step + 0.5, x + w - step - 0.5, y + h - step - 0.5);
+    }
+}
+
+export function createSlotPlate({styleClass = 'uthy-slot-plate', options = {}} = {}) {
+    return createPaintedArea({
+        styleClass,
+        paint: (cr, width, height) => paintMachinedSlot(cr, width, height, options),
+    });
 }

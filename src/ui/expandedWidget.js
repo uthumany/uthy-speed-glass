@@ -1,3 +1,4 @@
+import Clutter from 'gi://Clutter';
 import St from 'gi://St';
 import {formatSpeed} from '../network/speedCalculator.js';
 import {formatBytes} from '../network/statistics.js';
@@ -5,12 +6,28 @@ import {createHistoryGraph} from './historyGraph.js';
 import {createStatusLine} from './ledIndicator.js';
 import {createSpeedGauge, updateSpeedGauge} from './speedGauge.js';
 import {createEngravedBand, createEngravedText} from './engravedText.js';
+import {createSlotPlate} from './metalPlate.js';
 
+/**
+ * A statistic in its own small machined slot: the same frame, bevel and cavity
+ * as the metric panels, scaled down, with a letterpressed label and a debossed
+ * value inside it.
+ */
 function createStat(title, initial) {
-    const item = new St.BoxLayout({vertical: true, style_class: 'uthy-stat-item', x_expand: true});
-    item.add_child(createEngravedBand({text: title, role: 'stat-title'}).actor);
+    const item = new St.Widget({
+        layout_manager: new Clutter.BinLayout(),
+        style_class: 'uthy-stat-item',
+        x_expand: true,
+    });
+    item.add_child(createSlotPlate({
+        styleClass: 'uthy-stat-slot',
+        options: {inset: 2, bevel: 1, depth: 3, glint: 0.45},
+    }));
+    const content = new St.BoxLayout({vertical: true, style_class: 'uthy-stat-content', x_expand: true});
+    content.add_child(createEngravedBand({text: title, role: 'stat-title'}).actor);
     const value = createEngravedText({text: initial, role: 'stat-value', xExpand: true});
-    item.add_child(value.actor);
+    content.add_child(value.actor);
+    item.add_child(content);
     return {actor: item, value};
 }
 

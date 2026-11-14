@@ -9,7 +9,7 @@ import {IconFactory} from './iconFactory.js';
 import {Motion} from './motion.js';
 import {cardSurfaceStyle, floatingTrayStyle} from './glassMaterial.js';
 import {createEngravedText} from './engravedText.js';
-import {createMetalPlate} from './metalPlate.js';
+import {createImpressionPlate} from './metalPlate.js';
 
 const MODE_SIZES = {
     mini: {width: 280, height: 136},
@@ -80,10 +80,12 @@ export class WidgetController {
             can_focus: true,
             x_expand: true,
         });
-        this._brandPlate = createMetalPlate({
-            styleClass: 'uthy-brand-plate',
-            tone: 'brand',
-            recessOptions: {inset: 1, shadow: 0.85, lip: 0.26, depth: 0.75},
+        // No frame around the header: a soft impression with no drawn edge at
+        // all, so the name still reads as pressed into the metal without a box
+        // around it. The logo sits directly to its left, on the same line.
+        this._brandPlate = createImpressionPlate({
+            styleClass: 'uthy-brand-impression',
+            options: {depth: 0.38},
         });
         const brandRow = new St.BoxLayout({style_class: 'uthy-brand-row', x_expand: true});
         this._brandIcon = this._icons.createIcon({iconName: 'brand', iconSize: 16,

@@ -16,6 +16,8 @@ import Gio from 'gi://Gio';
 import St from 'gi://St';
 
 import {createEngravedText} from './engravedText.js';
+import {hexToRgb} from './glassMaterial.js';
+import {createPaintedArea, paintGlyphInlay, paintPushButtonCap} from './metalPlate.js';
 
 const THEME_FALLBACKS = {
     'brand': 'network-transmit-receive-symbolic',
@@ -88,7 +90,7 @@ export class IconFactory {
      * control. Both share the same press, release and hover behaviour.
      */
     createButton({iconName = null, label = null, accessibleName, styleClass = 'uthy-icon-button',
-        iconSize = 16, onClicked}) {
+        iconSize = 16, onClicked, accent = null}) {
         const hasLabel = label !== null;
         // Raised controls (the tray buttons) travel towards the pointer and
         // press into their own shadow; the bare toolbar icons only squash, so
@@ -97,18 +99,64 @@ export class IconFactory {
         // A labelled control is stamped into its plate: the same engraved pair
         // the rest of the interface uses, so the type never looks flat.
         const engraved = hasLabel ? createEngravedText({text: label, role: 'control'}) : null;
-        const child = engraved ? engraved.actor : this.createIcon({iconName, iconSize});
+        const icon = hasLabel ? null : this.createIcon({iconName, iconSize});
+
+        // A raised control is a physical push button: a painted metal cap in
+        // one state and a sunken socket in the other. The painter reads this
+        // state object, so a press repaints the cap instead of restyling it.
+        const state = {pressed: false, hover: false};
+        let cap = null;
+        let child = engraved ? engraved.actor : icon;
+        if (raised) {
+            cap = createPaintedArea({
+                styleClass: 'uthy-button-cap',
+                paint: (cr, width, height) => paintPushButtonCap(cr, width, height,
+                    {pressed: state.pressed, hover: state.hover}),
+            });
+            const stack = new St.Widget({
+                layout_manager: new Clutter.BinLayout(),
+                x_expand: true,
+                y_expand: true,
+            });
+            stack.add_child(cap);
+            if (icon) {
+                // The glyph is pressed into the cap: a small impression with a
+                // shadow above it and a lit edge below, which also carries the
+                // bloom when the glyph is lit from behind.
+                const bloom = accent ? hexToRgb(accent) : null;
+                const glyph = new St.Widget({
+                    layout_manager: new Clutter.BinLayout(),
+                    width: iconSize + 2,
+                    height: iconSize + 2,
+                });
+                glyph.add_child(createPaintedArea({
+                    styleClass: 'uthy-glyph-inlay',
+                    paint: (cr, width, height) => paintGlyphInlay(cr, width, height, {bloom}),
+                }));
+                glyph.add_child(icon);
+                stack.add_child(glyph);
+            } else {
+                stack.add_child(engraved.actor);
+            }
+            child = stack;
+        }
+        // A control with a painted cap handles hover in its own material, so it
+        // takes no hover pseudo-class at all: with track_hover off neither the
+        // Shell theme's `button:hover` rules nor a leftover wash of our own can
+        // draw a box behind the cap. The enter and leave handlers below drive
+        // the lift either way.
         const button = new St.Button({
             style_class: styleClass,
             can_focus: true,
             reactive: true,
-            track_hover: true,
+            track_hover: !raised,
             accessible_name: accessibleName,
             child,
         });
         const record = {
             button,
-            icon: hasLabel ? null : child,
+            cap,
+            icon,
             iconName: hasLabel ? null : iconName,
             label: engraved,
             labelText: hasLabel ? label : null,
@@ -119,6 +167,8 @@ export class IconFactory {
         // so the squash, the overshoot and the material state stay in sync.
         record.pressId = button.connect('button-press-event', () => {
             button.add_style_pseudo_class('active');
+            state.pressed = true;
+            cap?.queue_repaint();
             if (raised)
                 this._motion.pressControl(button);
             else
@@ -127,6 +177,8 @@ export class IconFactory {
         });
         record.releaseId = button.connect('button-release-event', () => {
             button.remove_style_pseudo_class('active');
+            state.pressed = false;
+            cap?.queue_repaint();
             if (raised)
                 this._motion.settleControl(button);
             else
@@ -134,6 +186,8 @@ export class IconFactory {
             return Clutter.EVENT_PROPAGATE;
         });
         record.enterId = button.connect('enter-event', () => {
+            state.hover = true;
+            cap?.queue_repaint();
             if (raised)
                 this._motion.raiseControl(button);
             else
@@ -142,6 +196,9 @@ export class IconFactory {
         });
         record.leaveId = button.connect('leave-event', () => {
             button.remove_style_pseudo_class('active');
+            state.hover = false;
+            state.pressed = false;
+            cap?.queue_repaint();
             if (raised)
                 this._motion.settleControl(button);
             else

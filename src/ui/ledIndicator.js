@@ -25,7 +25,7 @@ export const LED_STATES = {
     DISABLED: 'Monitoring stopped',
 };
 
-export function createLedIndicator({size = 13, motion = null} = {}) {
+export function createLedIndicator({size = 17, motion = null} = {}) {
     const area = new St.DrawingArea({
         style_class: 'uthy-led',
         width: size,
@@ -56,12 +56,44 @@ export function createLedIndicator({size = 13, motion = null} = {}) {
             const centreY = height / 2;
             const bodyRadius = Math.max(2, width / 2 - 2.5);
 
-            // Outer bloom: the light escaping the dome.
+            const red = colour.red / 255;
+            const green = colour.green / 255;
+            const blue = colour.blue / 255;
+
+            // The socket it is set into: a hole in the metal, so its upper wall
+            // is shadowed and its lower wall catches the light.
+            const socketRadius = bodyRadius + 1.6;
+            cr.setSourceRGBA(0, 0, 0, 0.75);
+            cr.newPath();
+            cr.arc(centreX, centreY, socketRadius, 0, Math.PI * 2);
+            cr.fill();
+
+            cr.setLineWidth(1);
+            cr.setSourceRGBA(0, 0, 0, 0.85);
+            cr.newPath();
+            cr.arc(centreX, centreY, socketRadius - 0.4, Math.PI * 0.85, Math.PI * 2.15);
+            cr.stroke();
+            cr.setSourceRGBA(1, 1, 1, 0.22);
+            cr.newPath();
+            cr.arc(centreX, centreY, socketRadius - 0.4, Math.PI * 0.1, Math.PI * 0.9);
+            cr.stroke();
+
+            // Light escaping the lens, which also spills onto the metal below
+            // it: the bloom and the faint reflection on the surrounding panel.
             const bloom = new cairo.RadialGradient(centreX, centreY, bodyRadius * 0.4,
                 centreX, centreY, width / 2);
-            bloom.addColorStopRGBA(0, colour.red / 255, colour.green / 255, colour.blue / 255, 0.42);
-            bloom.addColorStopRGBA(1, colour.red / 255, colour.green / 255, colour.blue / 255, 0);
+            bloom.addColorStopRGBA(0, red, green, blue, 0.5);
+            bloom.addColorStopRGBA(0.6, red, green, blue, 0.12);
+            bloom.addColorStopRGBA(1, red, green, blue, 0);
             cr.setSource(bloom);
+            cr.rectangle(0, 0, width, height);
+            cr.fill();
+
+            const reflection = new cairo.RadialGradient(centreX, centreY + bodyRadius * 1.5, 0,
+                centreX, centreY + bodyRadius * 1.5, width * 0.55);
+            reflection.addColorStopRGBA(0, red, green, blue, 0.16);
+            reflection.addColorStopRGBA(1, red, green, blue, 0);
+            cr.setSource(reflection);
             cr.rectangle(0, 0, width, height);
             cr.fill();
 

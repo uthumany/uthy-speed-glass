@@ -4,15 +4,19 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {createMiniWidget} from './miniWidget.js';
 import {createExpandedWidget} from './expandedWidget.js';
 import {DragController} from './dragController.js';
+import {createGlassBackdrop} from './glassBackdrop.js';
 import {IconFactory} from './iconFactory.js';
 import {Motion} from './motion.js';
-import {cardSurfaceStyle, toolbarSpecularStyle} from './glassMaterial.js';
+import {cardSurfaceStyle, floatingTrayStyle} from './glassMaterial.js';
 
 const MODE_SIZES = {
     mini: {width: 280, height: 136},
     compact: {width: 340, height: 164},
     expanded: {width: 500, height: 310},
 };
+
+/** How far the control tray hangs below the slab's bottom edge. */
+const TRAY_OVERHANG = 10;
 
 function isValidMode(mode) {
     return Object.hasOwn(MODE_SIZES, mode) ? mode : 'mini';
@@ -33,20 +37,34 @@ export class WidgetController {
         this._destroyed = false;
         this._focused = false;
         this._expandedControls = null;
+        this._tray = null;
         this._modeBeforeMinimize = this._mode;
         this._sizeBeforeMinimize = null;
 
         this._motion = new Motion(Boolean(settings.get('reduce-motion')));
         this._icons = new IconFactory({extension, motion: this._motion});
 
-        this.actor = new St.BoxLayout({
-            vertical: true,
+        // The card is a stack, not a column: a backdrop, the content column,
+        // the resize grip and - in expanded mode - the floating control tray.
+        // The z-order is the design's depth order, from the slab's inner
+        // surface up to the tray that hovers above everything else.
+        this.actor = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
             style_class: 'uthy-glass-card',
             reactive: true,
             can_focus: true,
             track_hover: true,
             accessible_name: 'UthyPing network monitor',
         });
+        this._backdrop = createGlassBackdrop();
+        this.actor.add_child(this._backdrop);
+        this._stack = new St.BoxLayout({
+            vertical: true,
+            style_class: 'uthy-card-stack',
+            x_expand: true,
+            y_expand: true,
+        });
+        this.actor.add_child(this._stack);
         this._toolbar = new St.BoxLayout({style_class: 'uthy-toolbar', x_expand: true});
         this._dragHandle = new St.BoxLayout({
             style_class: 'uthy-drag-handle',
@@ -84,10 +102,10 @@ export class WidgetController {
             onClicked: () => this.setVisible(false),
         });
         this._toolbar.add_child(this._close.button);
-        this.actor.add_child(this._toolbar);
+        this._stack.add_child(this._toolbar);
 
         this._body = new St.BoxLayout({vertical: true, style_class: 'uthy-widget-body', x_expand: true, y_expand: true});
-        this.actor.add_child(this._body);
+        this._stack.add_child(this._body);
         this._resizeHandle = new St.Widget({
             style_class: 'uthy-resize-handle',
             reactive: true,
@@ -95,10 +113,21 @@ export class WidgetController {
             accessible_name: 'Resize widget',
             width: 18,
             height: 18,
-            x_align: Clutter.ActorAlign.END,
-            y_align: Clutter.ActorAlign.END,
         });
-        this.actor.add_child(this._resizeHandle);
+        // BinLayout fills an expanding child and centres one that does not
+        // expand, so an anchored layer is built the other way round: the layer
+        // itself fills the card, and a spacer column inside it pushes the
+        // anchored actor down to the bottom edge. Both layers are transparent
+        // to input, so only the controls inside them react.
+        const grip = this._createBottomLayer();
+        this._gripLayer = grip.layer;
+        this._resizeHandle.x_align = Clutter.ActorAlign.END;
+        grip.column.add_child(this._resizeHandle);
+        const tray = this._createBottomLayer();
+        this._trayLayer = tray.layer;
+        this._trayColumn = tray.column;
+        this.actor.add_child(this._gripLayer);
+        this.actor.add_child(this._trayLayer);
 
         this._dragController = new DragController({
             actor: this.actor,
@@ -285,6 +314,12 @@ export class WidgetController {
             this._body.remove_child(child);
             child.destroy();
         }
+        if (this._tray) {
+            this._trayColumn.remove_child(this._tray.actor);
+            this._tray.actor.destroy();
+            this._tray = null;
+        }
+        this._stack.remove_style_class_name('uthy-stack-tray');
         this._expandedControls = null;
         const options = this._appearanceOptions();
         if (this._minimized || this._mode !== 'expanded') {
@@ -293,19 +328,49 @@ export class WidgetController {
         } else {
             this._content = createExpandedWidget(this._data, options);
             this._body.add_child(this._content.actor);
-            this._expandedControls = this._createExpandedControls();
-            this._body.add_child(this._expandedControls.actor);
+            // The controls leave the column and become a separate layer that
+            // hovers above the slab's bottom edge, so the tray reserves its
+            // own strip inside the column instead of sitting in it.
+            this._stack.add_style_class_name('uthy-stack-tray');
+            this._tray = this._createExpandedControls();
+            this._trayColumn.add_child(this._tray.actor);
+            this._expandedControls = this._tray;
         }
         this._content.update(this._data);
         this._resizeHandle.visible = !this._minimized;
         this._syncButtons();
     }
 
+    /**
+     * A full-size layer whose children are pinned to the bottom edge. BinLayout
+     * fills the column because the column expands, and the spacer inside the
+     * column pushes whatever follows it down, which is the only anchoring St
+     * gives us for free. The caller sets each child's horizontal alignment.
+     */
+    _createBottomLayer() {
+        const layer = new St.Widget({
+            layout_manager: new Clutter.BinLayout(),
+            x_expand: true,
+            y_expand: true,
+            reactive: false,
+        });
+        const column = new St.BoxLayout({vertical: true, x_expand: true, y_expand: true});
+        column.add_child(new St.Widget({y_expand: true}));
+        layer.add_child(column);
+        return {layer, column};
+    }
+
     _createExpandedControls() {
-        const row = new St.BoxLayout({style_class: 'uthy-controls-row', x_expand: true});
+        const row = new St.BoxLayout({
+            style_class: 'uthy-controls-row uthy-floating-tray',
+            translation_y: TRAY_OVERHANG,
+        });
+        row.x_align = Clutter.ActorAlign.CENTER;
+        row.set_style(floatingTrayStyle());
         const paused = Boolean(this._data.paused);
         const pause = this._icons.createButton({
             iconName: paused ? 'play' : 'pause',
+            styleClass: 'uthy-control-button',
             accessibleName: paused ? 'Resume monitoring' : 'Pause monitoring',
             onClicked: () => {
                 if (this._monitor.paused)
@@ -321,11 +386,13 @@ export class WidgetController {
             onClicked: () => this._cycleInterface(),
         });
         const reset = this._icons.createButton({
-            iconName: 'refresh', accessibleName: 'Reset session statistics',
+            iconName: 'refresh', styleClass: 'uthy-control-button',
+            accessibleName: 'Reset session statistics',
             onClicked: () => this._monitor.resetStatistics(),
         });
         const prefs = this._icons.createButton({
-            iconName: 'settings', accessibleName: 'Open preferences',
+            iconName: 'settings', styleClass: 'uthy-control-button',
+            accessibleName: 'Open preferences',
             onClicked: () => this._extension.openPreferences(),
         });
         row.add_child(pause.button);
@@ -410,10 +477,11 @@ export class WidgetController {
         if (!this.actor)
             return;
         const alpha = Math.max(0.45, Math.min(0.96, this._settings.get('transparency') / 100));
-        const radius = this._settings.get('corner-radius');
         const fontSize = this._settings.get('font-size');
-        this.actor.set_style(cardSurfaceStyle({radius, fontSize, alpha, focused: this._focused}));
-        this._toolbar.set_style(toolbarSpecularStyle({radius}));
+        // Corners are square by definition now, so the surface carries no
+        // radius at all. The title strip's sheen is painted by the backdrop
+        // rather than by a second surface with its own shadow.
+        this.actor.set_style(cardSurfaceStyle({fontSize, alpha, focused: this._focused}));
     }
 
     /**

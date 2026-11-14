@@ -2,6 +2,10 @@ import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+// The control tray hovers below the slab's bottom edge, so the card stops
+// short of the monitor edge by the same amount and the tray stays visible.
+const TRAY_INSET = 14;
+
 export class DragController {
     constructor({actor, dragHandle, resizeHandle, settings, isPinned}) {
         this._actor = actor;
@@ -33,7 +37,7 @@ export class DragController {
         const [width, height] = this._actor.get_size();
         this._actor.set_position(
             Math.max(monitor.x, Math.min(x, monitor.x + monitor.width - width)),
-            Math.max(monitor.y, Math.min(y, monitor.y + monitor.height - height)),
+            Math.max(monitor.y, Math.min(y, monitor.y + monitor.height - height - TRAY_INSET)),
         );
     }
 

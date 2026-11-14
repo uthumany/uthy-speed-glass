@@ -1,81 +1,97 @@
-/* Uthy Speed Glass — liquid glass surface with skeuomorphic depth.
+/* UthyPing — square liquid glass with skeuomorphic depth.
  *
- * Material model adapted from the QuickLiquid liquid-glass description
- * (https://quickliquid.vercel.app/). GNOME Shell's St toolkit has no DOM,
- * WebGL or backdrop blur, so the model is expressed with what St supports:
- * vertical gradients for tint and sheen, a light border for the refraction
- * edge, inset shadows for embossing and a cool rim highlight for the top
- * specular. The key light always comes from the upper left.
+ * The palette is one glowing orange accent (#FF8A1F) for anything focused,
+ * active or measured, a monochrome body of near-blacks and off-whites, and
+ * silver rims for every edge that catches light. Corners are square: the
+ * radius belongs to the material now, not to a setting.
  *
- * Layout metrics (paddings, spacings, minimum sizes, font sizes) are
- * unchanged from the original stylesheet. Only the material changed, and
- * paddings are reduced by one pixel wherever a 1px rim border was added so
- * that every control keeps its original footprint.
+ * Depth is layered rather than stacked on one actor. The desktop casts the
+ * card's shadow, the card carries the tint and the border, the backdrop
+ * (src/ui/glassBackdrop.js) paints the grid, the grain, the sheen and the rim
+ * lights, the wells are pressed into the slab, and the control tray floats
+ * above all of it. That order is the z-axis: desktop, slab, wells, tray.
  *
- * Three St rules shape the rules below:
+ * Four St rules shape the declarations below:
  *   1. St honours exactly one box-shadow per declaration and warns about the
  *      rest, so each surface spends its single shadow on the cue that matters
- *      most for it: cast shadow, specular edge, engraved groove or focus ring.
- *   2. Inline styles beat the stylesheet, so the card's tint, radius, font
- *      size and focus ring live in src/ui/glassMaterial.js, and the toolbar's
- *      specular edge is applied there too.
- *   3. Dividers use inset shadows instead of per-side border shorthands,
- *      which St does not guarantee to parse. The sunken name slot is the one
- *      exception, and it degrades to a plain recess if the lips are ignored.
- *   4. The supplied icons are physical objects with their own bevel, highlight
- *      and contact shadow, so their buttons draw no plate, border or shadow:
- *      a frame around them would double every edge.
- *   5. St paints an outer box-shadow as a filled block when the actor has no
- *      background and ignores an inset one, so the focus rings on the bare
- *      controls are borders, reserved transparent and coloured on focus.
+ *      most for it. Where a recess needs a dark press and a lit lower lip, the
+ *      lip is a border.
+ *   2. St has no backdrop sampling: there is no backdrop-filter and no way for
+ *      an actor to blur what is painted behind it. The glass reads as thick
+ *      because of the tint, the sheen, the grain and the bright 1px rim, not
+ *      because anything is actually blurred.
+ *   3. Inline styles beat the stylesheet, so the card's tint, its cast shadow,
+ *      its focus ring, the wells, the grooves and the tray are set from
+ *      src/ui/glassMaterial.js.
+ *   4. The supplied icons are physical objects with their own bevel and
+ *      contact shadow, so the title-strip buttons stay frameless and only the
+ *      four tray controls get a raised plate.
  */
 
 /* ── Card shell ─────────────────────────────────────────────────────────── */
 
+/* The card carries no padding of its own: the backdrop has to reach the
+   border, otherwise the rim light is drawn inside the padding box. */
 .uthy-glass-card {
-  padding: 8px 10px 6px;
-  spacing: 4px;
-  color: #f5f8ff;
+  padding: 0;
+  border-radius: 0;
+  color: #f2f5f8;
+}
+
+.uthy-backdrop {
+  border-radius: 0;
+}
+
+.uthy-card-stack {
+  padding: 9px 10px 8px;
+  spacing: 6px;
+}
+
+/* In expanded mode the controls leave the column and hover below the slab, so
+   the column keeps their strip free at the bottom. */
+.uthy-stack-tray {
+  padding-bottom: 30px;
 }
 
 /* ── Title strip: the top edge of the glass catching the key light ──────── */
 
 .uthy-toolbar {
   min-height: 26px;
-  spacing: 4px;
+  spacing: 6px;
   padding-bottom: 4px;
 }
 
 /* The name plate is a deep recess: a dark floor, an inset shadow that reads as
-   a press into the card, a dark upper lip and a lit lower lip. The lettering
+   a press into the slab, a dark upper lip and a lit lower lip. The lettering
    is engraved - dim, with a single light shadow below the glyph - so it looks
    cut into the surface instead of printed on it. */
 .uthy-drag-handle {
   min-height: 24px;
-  padding: 2px 9px;
-  spacing: 6px;
-  border-radius: 10px;
-  background-color: rgba(2, 5, 12, 0.72);
-  box-shadow: inset 0 5px 10px rgba(0, 1, 6, 0.95);
-  border-top: 1px solid rgba(0, 0, 0, 0.70);
-  border-bottom: 1px solid rgba(196, 222, 255, 0.14);
+  padding: 3px 9px;
+  spacing: 7px;
+  border-radius: 0;
+  background-color: rgba(3, 5, 9, 0.74);
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.95);
+  border-top: 1px solid rgba(0, 0, 0, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 /* Hovering lifts the recess a little instead of drawing a plate. */
 .uthy-drag-handle:hover {
-  background-color: rgba(6, 12, 24, 0.62);
+  background-color: rgba(7, 11, 18, 0.62);
 }
 
 .uthy-drag-handle:focus {
-  background-color: rgba(10, 18, 34, 0.80);
+  background-color: rgba(12, 17, 26, 0.82);
+  border-bottom-color: rgba(255, 138, 31, 0.45);
 }
 
 .uthy-brand {
-  color: rgba(180, 201, 226, 0.96);
+  color: rgba(198, 212, 228, 0.96);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.8px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.17);
+  letter-spacing: 1.1px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* The bundled icons carry their own depth, so they must be drawn in regular
@@ -87,16 +103,16 @@
 .uthy-mini-icon,
 .uthy-gauge-icon,
 .uthy-panel-icon {
-  color: #eaf3ff;
+  color: #eef3f9;
   -st-icon-style: regular;
 }
 
 .uthy-theme-icon {
-  color: #eaf3ff;
+  color: #eef3f9;
   -st-icon-style: symbolic;
 }
 
-/* ── Tactile controls: bare 3D icons, drawn without a frame ─────────────── */
+/* ── Title-strip buttons: bare 3D icons, drawn without a frame ─────────── */
 
 .uthy-icon-button {
   min-width: 24px;
@@ -106,69 +122,77 @@
      resizes the control. St draws an outer box-shadow as a filled block
      behind a transparent actor, so a shadow cannot be used for this. */
   border: 2px solid transparent;
-  border-radius: 12px;
-  color: #edf4ff;
+  border-radius: 0;
+  color: #eef3f9;
   background-color: transparent;
 }
 
 /* Hover is a soft wash rather than a plate, and the press squash comes from
    the motion helper, so the icon itself stays the only solid object. */
 .uthy-icon-button:hover {
-  background-color: rgba(226, 240, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .uthy-icon-button:active {
-  background-color: rgba(4, 10, 22, 0.45);
+  background-color: rgba(0, 0, 0, 0.42);
 }
 
 /* The focus ring stays: without it a keyboard user has no visible focus. */
 .uthy-icon-button:focus {
-  border-color: rgba(39, 201, 255, 0.95);
+  border-color: rgba(255, 138, 31, 0.95);
 }
 
+/* ── Tray controls: raised plates that lift and press ───────────────────── */
+
 .uthy-control-button {
-  min-height: 24px;
-  padding: 2px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 8px;
-  color: #f5f8ff;
+  min-height: 26px;
+  padding: 2px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-top-color: rgba(255, 255, 255, 0.38);
+  border-bottom-color: rgba(0, 0, 0, 0.62);
+  border-radius: 0;
+  color: #f2f5f8;
   background-gradient-direction: vertical;
-  background-gradient-start: rgba(255, 255, 255, 0.18);
-  background-gradient-end: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 2px 5px rgba(3, 8, 18, 0.45);
+  background-gradient-start: rgba(255, 255, 255, 0.16);
+  background-gradient-end: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55);
 }
 
 .uthy-control-button:hover {
-  border-color: rgba(228, 242, 255, 0.42);
-  background-gradient-start: rgba(255, 255, 255, 0.32);
+  border-top-color: rgba(255, 255, 255, 0.52);
+  background-gradient-start: rgba(255, 255, 255, 0.26);
 }
 
+/* Pressed: the plate drops into its own shadow. */
 .uthy-control-button:active {
-  background-gradient-start: rgba(2, 6, 16, 0.32);
-  box-shadow: inset 0 3px 6px rgba(2, 6, 16, 0.62);
+  background-gradient-start: rgba(0, 0, 0, 0.40);
+  background-gradient-end: rgba(0, 0, 0, 0.18);
+  border-top-color: rgba(0, 0, 0, 0.66);
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.72);
 }
 
 .uthy-control-button:focus {
-  border-color: rgba(126, 226, 255, 0.95);
-  box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.50);
+  border-color: rgba(255, 138, 31, 0.95);
+  box-shadow: 0 0 0 1px rgba(255, 138, 31, 0.55);
 }
 
 .uthy-control-label {
-  color: #f5f8ff;
+  color: #f2f5f8;
   font-size: 10px;
   font-weight: 600;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.80);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.80);
 }
 
 /* ── Readings ───────────────────────────────────────────────────────────── */
 
 .uthy-widget-body {
-  spacing: 7px;
-  padding: 2px 2px 4px;
+  spacing: 8px;
+  padding: 2px 2px 0;
 }
 
 .uthy-mini-content {
-  spacing: 4px;
+  spacing: 5px;
   padding: 2px 0;
 }
 
@@ -192,31 +216,47 @@
 .uthy-gauge-arrow {
   font-size: 17px;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(2, 6, 16, 0.90);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.90);
+}
+
+/* Every numeric readout uses tabular figures so a changing digit never
+   reflows the label next to it. */
+.uthy-mini-speed,
+.uthy-gauge-value,
+.uthy-stat-value {
+  font-feature-settings: "tnum";
 }
 
 .uthy-mini-speed {
-  color: #f5f8ff;
+  color: #f2f5f8;
   font-size: 15px;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(2, 6, 16, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
+/* Secondary labels are engraved: dim text with a light edge below it. */
 .uthy-mini-caption,
 .uthy-gauge-title,
 .uthy-stat-title {
-  color: #b7c5da;
+  color: #9dabb9;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.70);
+  letter-spacing: 0.9px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .uthy-status-line,
 .uthy-expanded-status {
-  color: #b7c5da;
+  color: #9dabb9;
   font-size: 10px;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.70);
+  spacing: 6px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.uthy-status-text {
+  color: #cbd5e0;
+  font-size: 10px;
+  letter-spacing: 0.3px;
 }
 
 /* ── Expanded layout ────────────────────────────────────────────────────── */
@@ -226,18 +266,12 @@
   padding: 2px 2px 0;
 }
 
-/* Raised glass tile: the gradient supplies the sheen, the single shadow the
-   lift off the card. */
+/* The well itself (dual inset cue, square, recessed) is set from
+   src/ui/glassMaterial.js so the whole cavity is described in one place. */
 .uthy-speed-gauge {
-  spacing: 5px;
+  spacing: 6px;
   min-width: 0;
-  padding: 6px 7px;
-  border: 1px solid rgba(214, 236, 255, 0.16);
-  border-radius: 12px;
-  background-gradient-direction: vertical;
-  background-gradient-start: rgba(255, 255, 255, 0.095);
-  background-gradient-end: rgba(255, 255, 255, 0.015);
-  box-shadow: 0 6px 16px rgba(3, 8, 18, 0.42);
+  padding: 7px 8px;
 }
 
 .uthy-gauge-heading {
@@ -245,43 +279,46 @@
 }
 
 .uthy-gauge-value {
-  color: #f5f8ff;
+  color: #f2f5f8;
   font-size: 22px;
   font-weight: 700;
-  text-shadow: 0 1px 3px rgba(2, 6, 16, 0.85);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 .uthy-gauge-peak {
-  color: #b7c5da;
+  color: #9dabb9;
   font-size: 10px;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.70);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.13);
 }
 
-/* The groove and the liquid are materialised in glassMaterial.js because
-   both depend on the user's accent colour. */
+/* Groove and liquid are materialised in glassMaterial.js because both depend
+   on the user's accent colour. */
 .uthy-meter-track {
-  min-height: 8px;
-  border-radius: 5px;
+  min-height: 9px;
+  border-radius: 0;
 }
 
 .uthy-meter-fill {
-  min-width: 4px;
-  min-height: 8px;
-  border-radius: 5px;
+  min-width: 6px;
+  min-height: 9px;
+  border-radius: 0;
 }
 
-/* Engraved glass window for the history traces. */
+/* Engraved window for the live chart: dark floor, dark upper wall, lit lower
+   lip, and the grid drawn inside it by src/ui/historyGraph.js. */
 .uthy-history-graph {
-  border-radius: 6px;
+  border-radius: 0;
   background-gradient-direction: vertical;
-  background-gradient-start: rgba(2, 6, 16, 0.34);
-  background-gradient-end: rgba(2, 6, 16, 0.16);
-  box-shadow: inset 0 2px 6px rgba(2, 6, 16, 0.55);
+  background-gradient-start: rgba(0, 2, 6, 0.52);
+  background-gradient-end: rgba(9, 14, 22, 0.34);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-bottom-color: rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.60);
 }
 
 .uthy-statistics-row {
-  padding-top: 3px;
-  box-shadow: inset 0 1px 0 rgba(214, 236, 255, 0.12);
+  padding-top: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .uthy-stat-item {
@@ -289,33 +326,38 @@
 }
 
 .uthy-stat-value {
-  color: #f5f8ff;
+  color: #f2f5f8;
   font-size: 11px;
   font-weight: 600;
-  text-shadow: 0 1px 1px rgba(2, 6, 16, 0.75);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
 }
 
-.uthy-controls-row {
-  min-height: 28px;
-  padding-top: 5px;
-  box-shadow: inset 0 1px 0 rgba(214, 236, 255, 0.13);
+/* ── The floating tray: the top layer of the stack ──────────────────────── */
+
+/* The slab and the cast shadow that lift the tray off the panel are set from
+   glassMaterial.js; this only reserves the strip and centres the controls. */
+.uthy-floating-tray {
+  spacing: 8px;
+  padding: 4px 8px;
+  border-radius: 0;
 }
 
 /* ── Resize affordance: a small embossed grip ───────────────────────────── */
 
 .uthy-resize-handle {
-  border-radius: 4px;
+  border-radius: 0;
   background-gradient-direction: vertical;
-  background-gradient-start: rgba(245, 248, 255, 0.26);
-  background-gradient-end: rgba(245, 248, 255, 0.10);
-  box-shadow: 0 1px 3px rgba(3, 8, 18, 0.45);
+  background-gradient-start: rgba(242, 245, 248, 0.26);
+  background-gradient-end: rgba(242, 245, 248, 0.10);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.50);
 }
 
 .uthy-resize-handle:hover {
-  background-gradient-start: rgba(39, 201, 255, 0.62);
-  background-gradient-end: rgba(39, 201, 255, 0.32);
+  background-gradient-start: rgba(255, 138, 31, 0.72);
+  background-gradient-end: rgba(169, 74, 5, 0.42);
 }
 
 .uthy-resize-handle:focus {
-  box-shadow: 0 0 0 2px rgba(39, 201, 255, 0.55);
+  border-color: rgba(255, 138, 31, 0.95);
 }

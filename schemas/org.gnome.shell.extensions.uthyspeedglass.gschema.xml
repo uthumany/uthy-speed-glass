@@ -13,10 +13,9 @@
     <key name="widget-height" type="i"><default>136</default><range min="70" max="700"/></key>
     <key name="pinned" type="b"><default>false</default></key>
     <key name="transparency" type="i"><default>78</default><range min="45" max="96"/></key>
-    <key name="download-color" type="s"><default>'#27C9FF'</default></key>
-    <key name="upload-color" type="s"><default>'#A56BFF'</default></key>
+    <key name="download-color" type="s"><default>'#FF8A1F'</default></key>
+    <key name="upload-color" type="s"><default>'#93A6B8'</default></key>
     <key name="font-size" type="i"><default>13</default><range min="10" max="22"/></key>
-    <key name="corner-radius" type="i"><default>22</default><range min="10" max="36"/></key>
     <key name="graph-height" type="i"><default>42</default><range min="24" max="100"/></key>
     <key name="reduce-motion" type="b"><default>false</default></key>
     <key name="ping-enabled" type="b"><default>false</default></key>

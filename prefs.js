@@ -7,6 +7,41 @@ import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/ex
 
 const COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 
+// The preferences window follows the same material as the widget: square
+// corners, one glowing orange accent, silver rims, and sliders whose trough is
+// a groove and whose thumb is a lit, bevelled handle.
+const PREFS_CSS = `
+window, .background { border-radius: 0; }
+preferencespage, preferencesgroup, .card, list, row, button, entry, spinbutton,
+dropdown, popover, popover > contents, headerbar, switch, slider, scale {
+  border-radius: 0;
+}
+scale trough {
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-bottom-color: rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  min-height: 8px;
+}
+scale highlight {
+  background-image: linear-gradient(to bottom, #ffc078, #c2590a);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 0;
+}
+scale slider {
+  background-image: linear-gradient(to bottom, #ffffff, #b9c2cc);
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-top-color: rgba(255, 255, 255, 0.85);
+  border-radius: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 6px rgba(255, 138, 31, 0.45);
+  min-width: 12px;
+  min-height: 18px;
+}
+button:focus, entry:focus, spinbutton:focus, row:focus {
+  outline-color: #ff8a1f;
+}
+`;
+
 function getInterfaceNames() {
     const names = [];
     let directory = null;
@@ -66,6 +101,16 @@ export default class UthySpeedGlassPreferences extends ExtensionPreferences {
         window.default_width = 650;
         window.default_height = 760;
 
+        try {
+            const provider = new Gtk.CssProvider();
+            provider.load_from_string(PREFS_CSS);
+            Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            this._cssProvider = provider;
+        } catch (_error) {
+            // The window keeps the platform theme if the CSS cannot be parsed.
+        }
+
         // Show the bundled logo on the page: GTK looks it up by file name once
         // the extension's icon directory is on the icon theme search path.
         let pageIcon = 'network-transmit-receive-symbolic';
@@ -111,13 +156,11 @@ export default class UthySpeedGlassPreferences extends ExtensionPreferences {
             settings.get_int('transparency'), 45, 96, value => settings.set_int('transparency', value));
         addSpin(appearance, 'Font size', 'Widget text size in logical pixels.',
             settings.get_int('font-size'), 10, 22, value => settings.set_int('font-size', value));
-        addSpin(appearance, 'Corner radius', 'Rounded surface corners in logical pixels.',
-            settings.get_int('corner-radius'), 10, 36, value => settings.set_int('corner-radius', value));
         addSpin(appearance, 'Graph height', 'Expanded graph height in logical pixels.',
             settings.get_int('graph-height'), 24, 100, value => settings.set_int('graph-height', value));
 
-        this._addColorRow(appearance, settings, 'download-color', 'Download accent color', '#27C9FF');
-        this._addColorRow(appearance, settings, 'upload-color', 'Upload accent color', '#A56BFF');
+        this._addColorRow(appearance, settings, 'download-color', 'Download accent color', '#FF8A1F');
+        this._addColorRow(appearance, settings, 'upload-color', 'Upload accent color', '#93A6B8');
         addSwitch(appearance, settings, 'show-graphs', 'Show history graphs', 'Draw recent download and upload traffic.');
 
         const behavior = new Adw.PreferencesGroup({title: 'Behavior', description: 'Control placement, motion, and optional local latency checks.'});

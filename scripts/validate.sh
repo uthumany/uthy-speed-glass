@@ -33,7 +33,7 @@ schema_file = root / 'schemas' / f'{expected_schema}.gschema.xml'
 schema = ET.parse(schema_file).getroot().find('schema')
 assert schema is not None and schema.attrib.get('id') == expected_schema, 'GSettings schema ID mismatch'
 keys = {key.attrib['name'] for key in schema.findall('key')}
-required = {'refresh-interval', 'interface', 'display-mode', 'show-graphs', 'show-widget', 'remember-position', 'widget-x', 'widget-y', 'widget-width', 'widget-height', 'pinned', 'transparency', 'download-color', 'upload-color', 'font-size', 'corner-radius', 'graph-height', 'reduce-motion', 'ping-enabled'}
+required = {'refresh-interval', 'interface', 'display-mode', 'show-graphs', 'show-widget', 'remember-position', 'widget-x', 'widget-y', 'widget-width', 'widget-height', 'pinned', 'transparency', 'download-color', 'upload-color', 'font-size', 'graph-height', 'reduce-motion', 'ping-enabled'}
 assert required <= keys, f'missing schema keys: {sorted(required - keys)}'
 assert (root / 'extension.js').is_file(), 'missing extension.js'
 assert (root / 'prefs.js').is_file(), 'missing prefs.js'
@@ -45,10 +45,10 @@ test -s "$TMP/gschemas.compiled"
 echo 'PASS: strict GSettings schema compilation'
 if command -v gsettings >/dev/null 2>&1; then
   key_count="$(GSETTINGS_SCHEMA_DIR="$TMP" GSETTINGS_BACKEND=memory gsettings list-keys org.gnome.shell.extensions.uthyspeedglass | wc -l)"
-  [[ "$key_count" -eq 19 ]]
+  [[ "$key_count" -eq 18 ]]
   [[ "$(GSETTINGS_SCHEMA_DIR="$TMP" GSETTINGS_BACKEND=memory gsettings get org.gnome.shell.extensions.uthyspeedglass refresh-interval)" == '1000' ]]
   [[ "$(GSETTINGS_SCHEMA_DIR="$TMP" GSETTINGS_BACKEND=memory gsettings get org.gnome.shell.extensions.uthyspeedglass interface)" == "'auto'" ]]
-  echo 'PASS: GSettings loads all 19 keys and expected defaults using the memory backend'
+  echo 'PASS: GSettings loads all 18 keys and expected defaults using the memory backend'
 else
   echo 'NOT TESTED: gsettings command is not installed'
 fi

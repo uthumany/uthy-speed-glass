@@ -25,11 +25,11 @@ export class SettingsManager {
     }
 
     get downloadColor() {
-        return this._readColor('download-color', '#27C9FF');
+        return this._readColor('download-color', '#FF8A1F');
     }
 
     get uploadColor() {
-        return this._readColor('upload-color', '#A56BFF');
+        return this._readColor('upload-color', '#93A6B8');
     }
 
     get(key) {
@@ -41,8 +41,7 @@ export class SettingsManager {
             'refresh-interval': [500, 2000], 'widget-x': [-10000, 10000],
             'widget-y': [-10000, 10000], 'widget-width': [240, 1000],
             'widget-height': [70, 700], 'transparency': [45, 96],
-            'font-size': [10, 22], 'corner-radius': [10, 36],
-            'graph-height': [24, 100],
+            'font-size': [10, 22], 'graph-height': [24, 100],
         };
         const range = ranges[key];
         if (!range || !Number.isFinite(value))
